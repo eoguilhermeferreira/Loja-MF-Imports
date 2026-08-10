@@ -1,10 +1,6 @@
 import Link from "next/link";
-import { Truck } from "lucide-react";
-import { InstagramIcon } from "@/components/icons/InstagramIcon";
-import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { getCategories } from "@/lib/queries";
-import { STORE_INFO } from "@/config/store";
 import { Logo } from "@/components/Logo";
 import { SearchBar } from "@/components/SearchBar";
 import { CartLink } from "@/components/CartLink";
@@ -16,31 +12,10 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-40 bg-white">
       <div className="bg-brand-black text-white">
-        <div className="container-mf flex h-8 items-center justify-center gap-1.5 text-xs md:h-9 md:justify-between">
-          <span className="inline-flex items-center gap-1.5 text-white/80">
-            <Truck className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+        <div className="container-mf flex h-8 items-center justify-center text-xs md:h-9">
+          <span className="inline-flex items-center text-white/80">
             <AnnouncementBar />
           </span>
-          <div className="hidden items-center gap-4 md:flex">
-            <a
-              href={`https://wa.me/${STORE_INFO.whatsappNumber}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-white/80 hover:text-brand-primary-light"
-            >
-              <WhatsappIcon className="h-3.5 w-3.5" />
-              {STORE_INFO.whatsapp}
-            </a>
-            <a
-              href={STORE_INFO.instagramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-white/80 hover:text-brand-primary-light"
-            >
-              <InstagramIcon className="h-3.5 w-3.5" />
-              {STORE_INFO.instagram}
-            </a>
-          </div>
         </div>
       </div>
 

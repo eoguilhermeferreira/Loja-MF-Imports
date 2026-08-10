@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Truck, CreditCard } from "lucide-react";
+import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 
 const MESSAGES = [
-  "Envio para todo o Brasil",
-  "Parcelamos no cartão",
-  "Suporte via WhatsApp",
+  { text: "Envio para todo o Brasil", Icon: Truck },
+  { text: "Parcelamos no cartão", Icon: CreditCard },
+  { text: "Suporte via WhatsApp", Icon: WhatsappIcon },
 ];
 
 export function AnnouncementBar() {
@@ -18,11 +20,12 @@ export function AnnouncementBar() {
     return () => clearInterval(id);
   }, []);
 
+  const { text, Icon } = MESSAGES[index];
+
   return (
-    <span className="inline-block h-4 overflow-hidden align-middle">
-      <span key={index} className="animate-fade-in inline-block">
-        {MESSAGES[index]}
-      </span>
+    <span key={index} className="animate-fade-in inline-flex items-center gap-1.5">
+      <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+      {text}
     </span>
   );
 }
