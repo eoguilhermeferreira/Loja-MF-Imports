@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, ShieldCheck, Truck, CreditCard } from "lucide-react";
+import { MapPin, Truck, CreditCard } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/InstagramIcon";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { STORE_INFO, AGENCY_CREDIT } from "@/config/store";
@@ -14,13 +14,6 @@ export async function Footer() {
       <div className="border-b border-white/10">
         <div className="container-mf grid grid-cols-1 gap-6 py-8 sm:grid-cols-3">
           <div className="flex items-center gap-3">
-            <ShieldCheck className="h-6 w-6 shrink-0 text-brand-primary-light" strokeWidth={1.5} />
-            <div>
-              <p className="text-sm font-semibold text-white">Produtos originais</p>
-              <p className="text-xs text-white/60">Procedência garantida</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
             <Truck className="h-6 w-6 shrink-0 text-brand-primary-light" strokeWidth={1.5} />
             <div>
               <p className="text-sm font-semibold text-white">Envio para todo o Brasil</p>
@@ -32,6 +25,13 @@ export async function Footer() {
             <div>
               <p className="text-sm font-semibold text-white">Parcele em até 12x</p>
               <p className="text-xs text-white/60">Pix, cartão ou boleto</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <WhatsappIcon className="h-6 w-6 shrink-0 text-brand-primary-light" />
+            <div>
+              <p className="text-sm font-semibold text-white">Suporte via WhatsApp</p>
+              <p className="text-xs text-white/60">Atendimento direto e rápido</p>
             </div>
           </div>
         </div>

@@ -1,13 +1,13 @@
-import { ShieldCheck, Truck, CreditCard } from "lucide-react";
+import { Truck, CreditCard } from "lucide-react";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { BENEFITS } from "@/config/store";
 
-const ICONS = [ShieldCheck, Truck, CreditCard, WhatsappIcon];
+const ICONS = [Truck, CreditCard, WhatsappIcon];
 
 export function TrustBadges() {
   return (
     <section className="border-y border-brand-border bg-brand-tint/50">
-      <div className="container-mf grid grid-cols-1 gap-6 py-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
+      <div className="container-mf grid grid-cols-1 gap-6 py-10 sm:grid-cols-3 sm:gap-4">
         {BENEFITS.map((benefit, i) => {
           const Icon = ICONS[i];
           return (

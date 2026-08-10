@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Truck } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/InstagramIcon";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
+import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { getCategories } from "@/lib/queries";
 import { STORE_INFO } from "@/config/store";
 import { Logo } from "@/components/Logo";
@@ -14,13 +15,13 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-white">
-      <div className="hidden bg-brand-black text-white md:block">
-        <div className="container-mf flex h-9 items-center justify-between text-xs">
+      <div className="bg-brand-black text-white">
+        <div className="container-mf flex h-8 items-center justify-center gap-1.5 text-xs md:h-9 md:justify-between">
           <span className="inline-flex items-center gap-1.5 text-white/80">
-            <Truck className="h-3.5 w-3.5" strokeWidth={1.75} />
-            Envio para todo o Brasil · Compre com confiança
+            <Truck className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+            <AnnouncementBar />
           </span>
-          <div className="flex items-center gap-4">
+          <div className="hidden items-center gap-4 md:flex">
             <a
               href={`https://wa.me/${STORE_INFO.whatsappNumber}`}
               target="_blank"
@@ -45,14 +46,16 @@ export async function Header() {
 
       <div className="border-b border-brand-border">
         <div className="container-mf flex items-center gap-4 py-3.5 md:py-4">
-          <HeaderMobileMenu categories={categories} />
+          <div className="flex flex-1 items-center">
+            <HeaderMobileMenu categories={categories} />
+          </div>
           <Link href="/" className="shrink-0">
             <Logo />
           </Link>
-          <div className="hidden flex-1 lg:block">
-            <SearchBar className="max-w-md" />
-          </div>
-          <div className="ml-auto flex items-center gap-1">
+          <div className="flex flex-1 items-center justify-end gap-3">
+            <div className="hidden lg:block">
+              <SearchBar className="max-w-md" />
+            </div>
             <CartLink />
           </div>
         </div>

@@ -28,10 +28,6 @@ export const CATEGORY_ICONS = [
 
 export const BENEFITS = [
   {
-    title: "Produtos originais",
-    description: "Procedência garantida em cada item do catálogo",
-  },
-  {
     title: "Envio para todo o Brasil",
     description: "Frete calculado na hora com rastreio do pedido",
   },
