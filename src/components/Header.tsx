@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { MessageCircle, Truck } from "lucide-react";
+import { Truck } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/InstagramIcon";
+import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { getCategories } from "@/lib/queries";
 import { STORE_INFO } from "@/config/store";
 import { Logo } from "@/components/Logo";
@@ -26,7 +27,7 @@ export async function Header() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-white/80 hover:text-brand-primary-light"
             >
-              <MessageCircle className="h-3.5 w-3.5" strokeWidth={1.75} />
+              <WhatsappIcon className="h-3.5 w-3.5" />
               {STORE_INFO.whatsapp}
             </a>
             <a

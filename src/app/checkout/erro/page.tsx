@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { XCircle } from "lucide-react";
 import { SiteChrome } from "@/components/SiteChrome";
+import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { STORE_INFO } from "@/config/store";
 
 export const metadata: Metadata = { title: "Erro no pagamento" };
@@ -30,6 +31,7 @@ export default function CheckoutErroPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-full border border-brand-border px-6 py-3 text-sm font-semibold text-brand-text hover:border-brand-primary"
           >
+            <WhatsappIcon className="h-4 w-4" />
             Falar no WhatsApp
           </a>
         </div>

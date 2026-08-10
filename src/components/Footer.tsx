@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { MessageCircle, MapPin, ShieldCheck, Truck, CreditCard } from "lucide-react";
+import { MapPin, ShieldCheck, Truck, CreditCard } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/InstagramIcon";
+import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { STORE_INFO, AGENCY_CREDIT } from "@/config/store";
 import { Logo } from "@/components/Logo";
 import { getCategories } from "@/lib/queries";
@@ -60,7 +61,7 @@ export async function Footer() {
               aria-label="WhatsApp"
               className="rounded-full border border-white/15 p-2 hover:border-brand-primary-light hover:text-brand-primary-light"
             >
-              <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
+              <WhatsappIcon className="h-4 w-4" />
             </a>
           </div>
         </div>
@@ -112,8 +113,9 @@ export async function Footer() {
                 href={`https://wa.me/${STORE_INFO.whatsappNumber}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-brand-primary-light"
+                className="flex items-center gap-2 hover:text-brand-primary-light"
               >
+                <WhatsappIcon className="h-4 w-4 shrink-0 text-brand-primary-light" />
                 {STORE_INFO.whatsapp}
               </a>
             </li>

@@ -1,7 +1,8 @@
-import { ShieldCheck, Truck, CreditCard, MessageCircle } from "lucide-react";
+import { ShieldCheck, Truck, CreditCard } from "lucide-react";
+import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { BENEFITS } from "@/config/store";
 
-const ICONS = [ShieldCheck, Truck, CreditCard, MessageCircle];
+const ICONS = [ShieldCheck, Truck, CreditCard, WhatsappIcon];
 
 export function TrustBadges() {
   return (

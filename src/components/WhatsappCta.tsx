@@ -1,11 +1,11 @@
-import { MessageCircle } from "lucide-react";
+import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { STORE_INFO } from "@/config/store";
 
 export function WhatsappCta() {
   return (
     <section className="container-mf pb-16 pt-4 md:pb-20">
       <div className="flex flex-col items-center gap-5 rounded-3xl bg-gradient-to-br from-brand-primary to-brand-primary-dark px-6 py-12 text-center text-white sm:px-10">
-        <MessageCircle className="h-9 w-9" strokeWidth={1.5} />
+        <WhatsappIcon className="h-9 w-9" />
         <h2 className="font-display text-2xl font-semibold sm:text-3xl">
           Ficou com alguma dúvida?
         </h2>
@@ -21,7 +21,7 @@ export function WhatsappCta() {
           rel="noopener noreferrer"
           className="mt-1 inline-flex items-center gap-2 rounded-full bg-white px-7 py-3 text-sm font-semibold text-brand-primary-dark transition-transform hover:scale-105"
         >
-          <MessageCircle className="h-4 w-4" strokeWidth={2} />
+          <WhatsappIcon className="h-4 w-4" />
           Chamar no WhatsApp
         </a>
       </div>

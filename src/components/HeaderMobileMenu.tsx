@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, MessageCircle } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/InstagramIcon";
+import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { SearchBar } from "@/components/SearchBar";
 import { Logo } from "@/components/Logo";
 import { STORE_INFO } from "@/config/store";
@@ -70,7 +71,7 @@ export function HeaderMobileMenu({ categories }: { categories: Category[] }) {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm font-medium text-brand-text"
               >
-                <MessageCircle className="h-4 w-4 text-brand-primary" strokeWidth={1.75} />
+                <WhatsappIcon className="h-4 w-4 text-brand-primary" />
                 {STORE_INFO.whatsapp}
               </a>
               <a
