@@ -8,6 +8,12 @@ export const STORE_INFO = {
   whatsappMessage: "Olá! Vim da loja online e gostaria de tirar uma dúvida.",
   address: "Rua Clementina Frazilli Schiavão, 135",
   email: "contato@mfimports.com.br",
+  ownerName: "Moisés Faria",
+} as const;
+
+export const AGENCY_CREDIT = {
+  name: "agência Nodex",
+  instagramUrl: "https://instagram.com/agencynodex",
 } as const;
 
 export const CATEGORY_ICONS = [

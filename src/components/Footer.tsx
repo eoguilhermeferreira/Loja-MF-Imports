@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { MessageCircle, MapPin, ShieldCheck, Truck, CreditCard } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/InstagramIcon";
-import { STORE_INFO } from "@/config/store";
+import { STORE_INFO, AGENCY_CREDIT } from "@/config/store";
 import { Logo } from "@/components/Logo";
 import { getCategories } from "@/lib/queries";
 
@@ -127,9 +127,24 @@ export async function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="container-mf flex flex-col items-center justify-between gap-2 py-5 text-xs text-white/40 sm:flex-row">
-          <p>© {new Date().getFullYear()} {STORE_INFO.name}. Todos os direitos reservados.</p>
-          <p>{STORE_INFO.address}</p>
+        <div className="container-mf flex flex-col items-center justify-between gap-4 py-6 text-xs text-white/40 sm:flex-row sm:items-end">
+          <div className="text-center leading-relaxed sm:text-left">
+            <p>© {new Date().getFullYear()}, {STORE_INFO.name}</p>
+            <p>
+              É vedada qualquer reprodução total ou parcial, nos termos da Lei nº 9.610/98.
+              Todos os direitos reservados.
+            </p>
+            <p>{STORE_INFO.address}</p>
+            <p>{STORE_INFO.ownerName}</p>
+          </div>
+          <a
+            href={AGENCY_CREDIT.instagramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 hover:text-brand-primary-light"
+          >
+            Feito pela {AGENCY_CREDIT.name}
+          </a>
         </div>
       </div>
     </footer>
