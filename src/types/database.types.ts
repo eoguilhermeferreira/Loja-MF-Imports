@@ -76,6 +76,7 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          parent_id: string | null
           slug: string
         }
         Insert: {
@@ -85,6 +86,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          parent_id?: string | null
           slug: string
         }
         Update: {
@@ -94,9 +96,18 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          parent_id?: string | null
           slug?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -283,9 +294,9 @@ export type Database = {
           code: string
           created_at: string
           description: string | null
+          home_section: Database["public"]["Enums"]["home_section_enum"] | null
           id: string
           is_active: boolean
-          is_featured: boolean
           name: string
           price: number
           promo_price: number | null
@@ -300,9 +311,9 @@ export type Database = {
           code?: string
           created_at?: string
           description?: string | null
+          home_section?: Database["public"]["Enums"]["home_section_enum"] | null
           id?: string
           is_active?: boolean
-          is_featured?: boolean
           name: string
           price: number
           promo_price?: number | null
@@ -317,9 +328,9 @@ export type Database = {
           code?: string
           created_at?: string
           description?: string | null
+          home_section?: Database["public"]["Enums"]["home_section_enum"] | null
           id?: string
           is_active?: boolean
-          is_featured?: boolean
           name?: string
           price?: number
           promo_price?: number | null
@@ -352,6 +363,7 @@ export type Database = {
         | "enviado"
         | "entregue"
         | "cancelado"
+      home_section_enum: "mais_vendidos" | "novidades" | "ofertas"
       payment_method_enum: "pix" | "cartao_credito" | "cartao_debito" | "boleto"
       payment_status_enum: "pendente" | "pago" | "falhou" | "reembolsado"
     }
@@ -488,6 +500,7 @@ export const Constants = {
         "entregue",
         "cancelado",
       ],
+      home_section_enum: ["mais_vendidos", "novidades", "ofertas"],
       payment_method_enum: ["pix", "cartao_credito", "cartao_debito", "boleto"],
       payment_status_enum: ["pendente", "pago", "falhou", "reembolsado"],
     },

@@ -4,16 +4,23 @@ import { useState } from "react";
 import Image from "next/image";
 import { Plus, X } from "lucide-react";
 import { saveProductAction } from "@/app/admin/actions";
-import type { Category, ProductWithRelations } from "@/lib/queries";
+import type { CategoryWithChildren, ProductWithRelations } from "@/lib/queries";
 
 type VariationRow = { label: string; value: string; stock: number };
+
+const HOME_SECTIONS = [
+  { value: "", label: "Nenhum (não aparece na tela inicial)" },
+  { value: "mais_vendidos", label: "Mais vendidos" },
+  { value: "novidades", label: "Novidades" },
+  { value: "ofertas", label: "Ofertas da semana" },
+] as const;
 
 export function ProductForm({
   product,
   categories,
 }: {
   product?: ProductWithRelations;
-  categories: Category[];
+  categories: CategoryWithChildren[];
 }) {
   const [existingImages, setExistingImages] = useState(product?.images ?? []);
   const [removedIds, setRemovedIds] = useState<string[]>([]);
@@ -80,11 +87,21 @@ export function ProductForm({
             className="input-mf w-full"
           >
             <option value="">Sem categoria</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
+            {categories.map((cat) =>
+              cat.children.length > 0 ? (
+                <optgroup key={cat.id} label={cat.name}>
+                  {cat.children.map((child) => (
+                    <option key={child.id} value={child.id}>
+                      {child.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              )
+            )}
           </select>
         </div>
         <div>
@@ -148,15 +165,22 @@ export function ProductForm({
           />
           Ativo na loja
         </label>
-        <label className="flex items-center gap-2 text-sm font-medium text-brand-text">
-          <input
-            type="checkbox"
-            name="is_featured"
-            defaultChecked={product?.is_featured ?? false}
-            className="accent-[var(--color-brand-primary)]"
-          />
-          Destaque (mais vendidos)
-        </label>
+        <div className="col-span-2 sm:col-span-4">
+          <label className="mb-1.5 block text-sm font-medium text-brand-text">
+            Aparece na tela inicial em
+          </label>
+          <select
+            name="home_section"
+            defaultValue={product?.home_section ?? ""}
+            className="input-mf w-full sm:w-64"
+          >
+            {HOME_SECTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </section>
 
       <section className="rounded-2xl border border-brand-border bg-white p-5">

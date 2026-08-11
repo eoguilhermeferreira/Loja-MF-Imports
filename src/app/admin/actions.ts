@@ -71,7 +71,8 @@ export async function saveProductAction(formData: FormData) {
   const stock = Number(formData.get("stock") || 0);
   const weightGrams = Number(formData.get("weight_grams") || 200);
   const isActive = formData.get("is_active") === "on";
-  const isFeatured = formData.get("is_featured") === "on";
+  const homeSectionRaw = (formData.get("home_section") as string) || null;
+  const homeSection = homeSectionRaw as "mais_vendidos" | "novidades" | "ofertas" | null;
 
   const variationLabels = formData.getAll("variation_label") as string[];
   const variationValues = formData.getAll("variation_value") as string[];
@@ -95,7 +96,7 @@ export async function saveProductAction(formData: FormData) {
         stock,
         weight_grams: weightGrams,
         is_active: isActive,
-        is_featured: isFeatured,
+        home_section: homeSection,
         updated_at: new Date().toISOString(),
       })
       .eq("id", productId);
@@ -115,7 +116,7 @@ export async function saveProductAction(formData: FormData) {
         stock,
         weight_grams: weightGrams,
         is_active: isActive,
-        is_featured: isFeatured,
+        home_section: homeSection,
       })
       .select("id")
       .single();
