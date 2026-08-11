@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -29,6 +29,30 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
 
+  useLayoutEffect(() => {
+    const track = trackRef.current;
+    if (!track || categories.length === 0) return;
+    track.scrollLeft = track.scrollWidth / 3;
+  }, [categories.length]);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || categories.length === 0) return;
+
+    function normalize() {
+      if (!track) return;
+      const setWidth = track.scrollWidth / 3;
+      if (track.scrollLeft < setWidth * 0.5) {
+        track.scrollLeft += setWidth;
+      } else if (track.scrollLeft > setWidth * 1.5) {
+        track.scrollLeft -= setWidth;
+      }
+    }
+
+    track.addEventListener("scroll", normalize, { passive: true });
+    return () => track.removeEventListener("scroll", normalize);
+  }, [categories.length]);
+
   useEffect(() => {
     const track = trackRef.current;
     if (!track || categories.length === 0) return;
@@ -39,10 +63,6 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
     function step() {
       if (track && !pausedRef.current) {
         track.scrollLeft += 0.6;
-        const half = track.scrollWidth / 2;
-        if (track.scrollLeft >= half) {
-          track.scrollLeft -= half;
-        }
       }
       frameId = requestAnimationFrame(step);
     }
@@ -53,7 +73,7 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
 
   if (categories.length === 0) return null;
 
-  const loop = [...categories, ...categories];
+  const loop = [...categories, ...categories, ...categories];
   const pause = () => {
     pausedRef.current = true;
   };
@@ -76,12 +96,13 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
       >
         {loop.map((cat, i) => {
           const Icon = ICONS[cat.icon ?? ""] ?? ShoppingBag;
+          const isMiddleCopy = i >= categories.length && i < categories.length * 2;
           return (
             <Link
               key={`${cat.id}-${i}`}
               href={`/categoria/${cat.slug}`}
-              aria-hidden={i >= categories.length}
-              tabIndex={i >= categories.length ? -1 : undefined}
+              aria-hidden={!isMiddleCopy}
+              tabIndex={isMiddleCopy ? undefined : -1}
               draggable={false}
               className="group flex shrink-0 items-center gap-2.5 rounded-full border border-brand-border bg-white py-2.5 pr-5 pl-2.5 text-center transition-all hover:border-brand-primary hover:shadow-md hover:shadow-brand-primary/10"
             >
