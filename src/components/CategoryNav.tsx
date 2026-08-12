@@ -25,9 +25,13 @@ const ICONS: Record<string, LucideIcon> = {
   headphones: Headphones,
 };
 
+const RESUME_DELAY = 1500;
+
 export function CategoryNav({ categories }: { categories: Category[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
+  const autoScrollingRef = useRef(false);
+  const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useLayoutEffect(() => {
     const track = trackRef.current;
@@ -49,8 +53,23 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
       }
     }
 
-    track.addEventListener("scroll", normalize, { passive: true });
-    return () => track.removeEventListener("scroll", normalize);
+    function handleScroll() {
+      normalize();
+      // Ignore scroll events we caused ourselves via the auto-scroll RAF loop —
+      // only real user gestures (touch swipe, trackpad, wheel) should pause it.
+      if (autoScrollingRef.current) return;
+      pausedRef.current = true;
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+      resumeTimeoutRef.current = setTimeout(() => {
+        pausedRef.current = false;
+      }, RESUME_DELAY);
+    }
+
+    track.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      track.removeEventListener("scroll", handleScroll);
+      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
+    };
   }, [categories.length]);
 
   useEffect(() => {
@@ -62,7 +81,9 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
 
     function step() {
       if (track && !pausedRef.current) {
+        autoScrollingRef.current = true;
         track.scrollLeft += 0.6;
+        autoScrollingRef.current = false;
       }
       frameId = requestAnimationFrame(step);
     }
@@ -74,12 +95,6 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
   if (categories.length === 0) return null;
 
   const loop = [...categories, ...categories, ...categories];
-  const pause = () => {
-    pausedRef.current = true;
-  };
-  const resume = () => {
-    pausedRef.current = false;
-  };
 
   return (
     <section className="py-10 md:py-14">
@@ -88,11 +103,8 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
       </h2>
       <div
         ref={trackRef}
-        onPointerDown={pause}
-        onPointerUp={resume}
-        onPointerLeave={resume}
-        onPointerCancel={resume}
         className="mt-6 flex gap-3 overflow-x-auto px-5 [-ms-overflow-style:none] [mask-image:linear-gradient(to_right,transparent,black_2rem,black_calc(100%-2rem),transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:gap-4 md:px-8"
+        style={{ touchAction: "pan-x", WebkitOverflowScrolling: "touch" }}
       >
         {loop.map((cat, i) => {
           const Icon = ICONS[cat.icon ?? ""] ?? ShoppingBag;
