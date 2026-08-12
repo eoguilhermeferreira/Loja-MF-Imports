@@ -1,17 +1,34 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { formatPrice, discountPercent } from "@/lib/format";
 import type { ProductWithRelations } from "@/lib/queries";
 
+const STEP_INTERVAL = 3500;
+const RESUME_DELAY = 2000;
+
 export function ProductCoverflow({ products }: { products: ProductWithRelations[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const rafRef = useRef<number | null>(null);
+  const activeIndexRef = useRef(products.length);
+  const pausedRef = useRef(false);
+  const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [dotIndex, setDotIndex] = useState(0);
+
+  const loop = [...products, ...products, ...products];
+
+  const scrollToIndex = useCallback((index: number) => {
+    const el = itemRefs.current[index];
+    const track = trackRef.current;
+    if (!el || !track) return;
+    const trackRect = track.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    const offset = elRect.left + elRect.width / 2 - trackRect.left - trackRect.width / 2;
+    track.scrollBy({ left: offset, behavior: "smooth" });
+  }, []);
 
   const updateStyles = useCallback(() => {
     const track = trackRef.current;
@@ -20,7 +37,7 @@ export function ProductCoverflow({ products }: { products: ProductWithRelations[
     const centerX = containerRect.left + containerRect.width / 2;
     const maxDist = containerRect.width / 2.1;
 
-    let closestIndex = 0;
+    let closestIndex = activeIndexRef.current;
     let closestDist = Infinity;
 
     itemRefs.current.forEach((el, i) => {
@@ -41,19 +58,51 @@ export function ProductCoverflow({ products }: { products: ProductWithRelations[
         closestIndex = i;
       }
     });
-    setActiveIndex(closestIndex);
-  }, []);
+    activeIndexRef.current = closestIndex;
+    setDotIndex(((closestIndex % products.length) + products.length) % products.length);
+  }, [products.length]);
+
+  // Keep the visible window inside the middle copy so every card always has
+  // real neighbors on both sides (fixes edge cards never reaching full focus).
+  const normalize = useCallback(() => {
+    const track = trackRef.current;
+    if (!track || products.length === 0) return;
+    const setWidth = track.scrollWidth / 3;
+    if (track.scrollLeft < setWidth * 0.5) {
+      track.scrollLeft += setWidth;
+    } else if (track.scrollLeft > setWidth * 1.5) {
+      track.scrollLeft -= setWidth;
+    }
+  }, [products.length]);
+
+  useLayoutEffect(() => {
+    if (products.length === 0) return;
+    scrollToIndexInstant(products.length);
+    function scrollToIndexInstant(index: number) {
+      const el = itemRefs.current[index];
+      const track = trackRef.current;
+      if (!el || !track) return;
+      const trackRect = track.getBoundingClientRect();
+      const elRect = el.getBoundingClientRect();
+      const offset = elRect.left + elRect.width / 2 - trackRect.left - trackRect.width / 2;
+      track.scrollLeft += offset;
+    }
+    // run styling pass after the initial jump settles
+    requestAnimationFrame(updateStyles);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products.length]);
 
   useEffect(() => {
-    updateStyles();
     const track = trackRef.current;
-    if (!track) return;
+    if (!track || products.length === 0) return;
 
+    let rafId: number | null = null;
     function onScroll() {
-      if (rafRef.current) return;
-      rafRef.current = requestAnimationFrame(() => {
+      normalize();
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
         updateStyles();
-        rafRef.current = null;
+        rafId = null;
       });
     }
 
@@ -62,18 +111,43 @@ export function ProductCoverflow({ products }: { products: ProductWithRelations[
     return () => {
       track.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", updateStyles);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [updateStyles, products.length]);
+  }, [normalize, updateStyles, products.length]);
 
-  function scrollToIndex(index: number) {
-    const el = itemRefs.current[index];
-    const track = trackRef.current;
-    if (!el || !track) return;
-    const trackRect = track.getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
-    const offset = elRect.left + elRect.width / 2 - trackRect.left - trackRect.width / 2;
-    track.scrollBy({ left: offset, behavior: "smooth" });
+  useEffect(() => {
+    if (products.length === 0) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    function armTimer() {
+      if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+      autoTimerRef.current = setTimeout(() => {
+        if (!pausedRef.current) {
+          scrollToIndex(activeIndexRef.current + 1);
+        }
+        armTimer();
+      }, STEP_INTERVAL);
+    }
+
+    armTimer();
+    return () => {
+      if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+    };
+  }, [scrollToIndex, products.length]);
+
+  function pause() {
+    pausedRef.current = true;
+  }
+
+  function resume() {
+    pausedRef.current = false;
+    if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+    autoTimerRef.current = setTimeout(function armAgain() {
+      if (!pausedRef.current) {
+        scrollToIndex(activeIndexRef.current + 1);
+      }
+      autoTimerRef.current = setTimeout(armAgain, STEP_INTERVAL);
+    }, RESUME_DELAY);
   }
 
   if (products.length === 0) return null;
@@ -82,15 +156,23 @@ export function ProductCoverflow({ products }: { products: ProductWithRelations[
     <div className="relative">
       <div
         ref={trackRef}
+        onTouchStart={pause}
+        onTouchEnd={resume}
+        onTouchCancel={resume}
+        onPointerDown={pause}
+        onPointerUp={resume}
+        onPointerLeave={resume}
+        onPointerCancel={resume}
+        onWheel={resume}
         className="flex items-start gap-5 overflow-x-auto px-[21vw] py-4 [-ms-overflow-style:none] [scrollbar-width:none] sm:px-[32%] [&::-webkit-scrollbar]:hidden"
         style={{ scrollSnapType: "x mandatory", touchAction: "pan-x" }}
       >
-        {products.map((product, i) => {
+        {loop.map((product, i) => {
           const primaryImage = product.images[0]?.url ?? null;
           const hasPromo = product.promo_price != null && product.promo_price < product.price;
           return (
             <div
-              key={product.id}
+              key={`${product.id}-${i}`}
               ref={(el) => {
                 itemRefs.current[i] = el;
               }}
@@ -150,18 +232,24 @@ export function ProductCoverflow({ products }: { products: ProductWithRelations[
           <button
             type="button"
             aria-label="Anterior"
-            onClick={() => scrollToIndex(Math.max(0, activeIndex - 1))}
-            className="absolute left-2 top-[38%] z-20 -translate-y-1/2 rounded-full border border-brand-border bg-white/90 p-2.5 shadow-md backdrop-blur-sm transition-colors hover:bg-white disabled:opacity-0 md:left-6"
-            disabled={activeIndex === 0}
+            onClick={() => {
+              pause();
+              scrollToIndex(activeIndexRef.current - 1);
+              resume();
+            }}
+            className="absolute left-2 top-[38%] z-20 -translate-y-1/2 rounded-full border border-brand-border bg-white/90 p-2.5 shadow-md backdrop-blur-sm transition-colors hover:bg-white md:left-6"
           >
             <ChevronLeft className="h-5 w-5 text-brand-text" strokeWidth={2} />
           </button>
           <button
             type="button"
             aria-label="Próximo"
-            onClick={() => scrollToIndex(Math.min(products.length - 1, activeIndex + 1))}
-            className="absolute right-2 top-[38%] z-20 -translate-y-1/2 rounded-full border border-brand-border bg-white/90 p-2.5 shadow-md backdrop-blur-sm transition-colors hover:bg-white disabled:opacity-0 md:right-6"
-            disabled={activeIndex === products.length - 1}
+            onClick={() => {
+              pause();
+              scrollToIndex(activeIndexRef.current + 1);
+              resume();
+            }}
+            className="absolute right-2 top-[38%] z-20 -translate-y-1/2 rounded-full border border-brand-border bg-white/90 p-2.5 shadow-md backdrop-blur-sm transition-colors hover:bg-white md:right-6"
           >
             <ChevronRight className="h-5 w-5 text-brand-text" strokeWidth={2} />
           </button>
@@ -172,9 +260,13 @@ export function ProductCoverflow({ products }: { products: ProductWithRelations[
                 key={i}
                 type="button"
                 aria-label={`Ir para item ${i + 1}`}
-                onClick={() => scrollToIndex(i)}
+                onClick={() => {
+                  pause();
+                  scrollToIndex(products.length + i);
+                  resume();
+                }}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === activeIndex ? "w-5 bg-brand-primary" : "w-1.5 bg-brand-border"
+                  i === dotIndex ? "w-5 bg-brand-primary" : "w-1.5 bg-brand-border"
                 }`}
               />
             ))}

@@ -46,15 +46,6 @@ export default async function Home() {
         image="https://images.unsplash.com/photo-1615634260167-c8cdede054de?w=1200&q=80"
       />
 
-      {promo.length > 0 && (
-        <ProductSection
-          title="Ofertas da semana"
-          subtitle="Aproveite enquanto durar o estoque"
-          products={promo}
-          href="/produtos"
-        />
-      )}
-
       {novidades.length > 0 && (
         <section className="py-12 md:py-16">
           <div className="container-mf mb-2 flex items-end justify-between gap-4">
@@ -74,6 +65,15 @@ export default async function Home() {
           </div>
           <ProductCoverflow products={novidades} />
         </section>
+      )}
+
+      {promo.length > 0 && (
+        <ProductSection
+          title="Ofertas da semana"
+          subtitle="Aproveite enquanto durar o estoque"
+          products={promo}
+          href="/produtos"
+        />
       )}
 
       <TrustBadges />
