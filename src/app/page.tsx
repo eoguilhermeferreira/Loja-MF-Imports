@@ -1,7 +1,10 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { SiteChrome } from "@/components/SiteChrome";
 import { BannerCarousel } from "@/components/BannerCarousel";
 import { CategoryNav } from "@/components/CategoryNav";
 import { ProductSection } from "@/components/ProductSection";
+import { ProductCoverflow } from "@/components/ProductCoverflow";
 import { EditorialBanner } from "@/components/EditorialBanner";
 import { TrustBadges } from "@/components/TrustBadges";
 import { WhatsappCta } from "@/components/WhatsappCta";
@@ -52,12 +55,26 @@ export default async function Home() {
         />
       )}
 
-      <ProductSection
-        title="Novidades"
-        subtitle="Acabou de chegar na MF Imports"
-        products={novidades}
-        href="/produtos"
-      />
+      {novidades.length > 0 && (
+        <section className="py-12 md:py-16">
+          <div className="container-mf mb-2 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="font-display text-2xl font-semibold text-brand-text md:text-3xl">
+                Novidades
+              </h2>
+              <p className="mt-1.5 text-sm text-brand-muted">Acabou de chegar na MF Imports</p>
+            </div>
+            <Link
+              href="/produtos"
+              className="hidden shrink-0 items-center gap-1.5 text-sm font-semibold text-brand-primary hover:text-brand-primary-dark sm:inline-flex"
+            >
+              Ver todos
+              <ArrowRight className="h-4 w-4" strokeWidth={2} />
+            </Link>
+          </div>
+          <ProductCoverflow products={novidades} />
+        </section>
+      )}
 
       <TrustBadges />
 
