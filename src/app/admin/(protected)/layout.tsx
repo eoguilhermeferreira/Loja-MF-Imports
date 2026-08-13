@@ -6,6 +6,7 @@ import {
   FolderKanban,
   GalleryHorizontal,
   ClipboardList,
+  Users,
   LogOut,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { href: "/admin/categorias", label: "Categorias", icon: FolderKanban },
   { href: "/admin/banners", label: "Banners", icon: GalleryHorizontal },
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
+  { href: "/admin/clientes", label: "Clientes", icon: Users },
 ];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

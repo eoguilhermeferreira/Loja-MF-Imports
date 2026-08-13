@@ -245,6 +245,67 @@ export async function deleteBannerAction(formData: FormData) {
   revalidatePath("/");
 }
 
+function onlyDigits(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+export async function saveCustomerAction(formData: FormData) {
+  const supabase = await createClient();
+
+  const id = formData.get("id") as string | null;
+  const name = formData.get("name") as string;
+  const phoneRaw = (formData.get("phone") as string) || "";
+  const phone = phoneRaw ? onlyDigits(phoneRaw) : null;
+  const email = (formData.get("email") as string)?.trim() || null;
+  const cpfRaw = (formData.get("cpf") as string) || "";
+  const cpf = cpfRaw ? onlyDigits(cpfRaw) : null;
+  const address = (formData.get("address") as string)?.trim() || null;
+
+  if (id) {
+    const { error } = await supabase
+      .from("customers")
+      .update({ name, phone, email, cpf, address, updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw new Error(error.message);
+    revalidatePath("/admin/clientes");
+    revalidatePath(`/admin/clientes/${id}`);
+    redirect(`/admin/clientes/${id}`);
+  } else {
+    const { data, error } = await supabase
+      .from("customers")
+      .insert({ name, phone, email, cpf, address })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    revalidatePath("/admin/clientes");
+    redirect(`/admin/clientes/${data.id}`);
+  }
+}
+
+export async function searchProductsForAdmin(query: string) {
+  const supabase = await createClient();
+  let request = supabase
+    .from("products")
+    .select("id, name, slug, price, promo_price, description")
+    .order("created_at", { ascending: false })
+    .limit(8);
+
+  if (query.trim()) {
+    request = request.or(`name.ilike.%${query}%,code.ilike.%${query}%`);
+  }
+
+  const { data } = await request;
+  return data ?? [];
+}
+
+export async function deleteCustomerAction(formData: FormData) {
+  const supabase = await createClient();
+  const id = formData.get("id") as string;
+  await supabase.from("customers").delete().eq("id", id);
+  revalidatePath("/admin/clientes");
+  redirect("/admin/clientes");
+}
+
 export async function updateOrderStatusAction(formData: FormData) {
   const supabase = await createClient();
   const id = formData.get("id") as string;

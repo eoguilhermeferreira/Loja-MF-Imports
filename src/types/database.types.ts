@@ -109,6 +109,39 @@ export type Database = {
           },
         ]
       }
+      customers: {
+        Row: {
+          address: string | null
+          cpf: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          cpf?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           id: string
@@ -164,6 +197,7 @@ export type Database = {
         Row: {
           created_at: string
           customer_email: string
+          customer_id: string | null
           customer_name: string
           customer_phone: string
           delivery_status: Database["public"]["Enums"]["delivery_status_enum"]
@@ -185,6 +219,7 @@ export type Database = {
         Insert: {
           created_at?: string
           customer_email: string
+          customer_id?: string | null
           customer_name: string
           customer_phone: string
           delivery_status?: Database["public"]["Enums"]["delivery_status_enum"]
@@ -206,6 +241,7 @@ export type Database = {
         Update: {
           created_at?: string
           customer_email?: string
+          customer_id?: string | null
           customer_name?: string
           customer_phone?: string
           delivery_status?: Database["public"]["Enums"]["delivery_status_enum"]
@@ -224,7 +260,15 @@ export type Database = {
           tracking_url?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_images: {
         Row: {
