@@ -185,6 +185,13 @@ export async function updateCategoryImageAction(formData: FormData) {
   revalidatePath("/");
 }
 
+export async function clearCategoryImageAction(categoryId: string) {
+  const supabase = await createClient();
+  await supabase.from("categories").update({ image_url: null }).eq("id", categoryId);
+  revalidatePath("/admin/categorias");
+  revalidatePath("/");
+}
+
 export async function saveBannerAction(formData: FormData) {
   const supabase = await createClient();
 

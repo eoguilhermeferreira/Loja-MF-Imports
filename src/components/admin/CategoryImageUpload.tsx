@@ -1,9 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
-import Image from "next/image";
-import { Upload } from "lucide-react";
-import { updateCategoryImageAction } from "@/app/admin/actions";
+import { useRef, useState, useTransition } from "react";
+import { updateCategoryImageAction, clearCategoryImageAction } from "@/app/admin/actions";
+import { ImageDropzone } from "@/components/admin/ImageDropzone";
 
 export function CategoryImageUpload({
   categoryId,
@@ -14,34 +13,29 @@ export function CategoryImageUpload({
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [preview, setPreview] = useState(currentImageUrl);
+  const [, startTransition] = useTransition();
 
   return (
-    <form
-      ref={formRef}
-      action={updateCategoryImageAction}
-      className="flex items-center gap-4"
-    >
+    <form ref={formRef} action={updateCategoryImageAction} className="flex items-center gap-4">
       <input type="hidden" name="id" value={categoryId} />
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-brand-tint">
-        {preview && <Image src={preview} alt="" fill sizes="64px" className="object-cover" />}
-      </div>
-      <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-brand-border px-4 py-2 text-xs font-semibold text-brand-text hover:border-brand-primary">
-        <Upload className="h-3.5 w-3.5" strokeWidth={2} />
-        Trocar foto
-        <input
-          type="file"
+      <div className="w-20">
+        <ImageDropzone
           name="image"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              setPreview(URL.createObjectURL(file));
-              formRef.current?.requestSubmit();
-            }
+          preview={preview}
+          onFiles={(files) => {
+            const file = files[0];
+            if (!file) return;
+            setPreview(URL.createObjectURL(file));
+            formRef.current?.requestSubmit();
+          }}
+          onRemove={() => {
+            setPreview(null);
+            startTransition(() => {
+              clearCategoryImageAction(categoryId);
+            });
           }}
         />
-      </label>
+      </div>
     </form>
   );
 }

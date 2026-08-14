@@ -1,17 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { saveBannerAction } from "@/app/admin/actions";
+import { ImageDropzone } from "@/components/admin/ImageDropzone";
 import type { Banner } from "@/lib/queries";
 
 export function BannerForm({ banner }: { banner?: Banner }) {
   const [preview, setPreview] = useState<string | null>(banner?.image_url ?? null);
+  const [existingUrl, setExistingUrl] = useState<string | null>(banner?.image_url ?? null);
 
   return (
     <form action={saveBannerAction} className="flex flex-col gap-6">
       {banner && <input type="hidden" name="id" value={banner.id} />}
-      {banner && <input type="hidden" name="existing_image_url" value={banner.image_url} />}
+      <input type="hidden" name="existing_image_url" value={existingUrl ?? ""} />
 
       <section className="grid grid-cols-1 gap-4 rounded-2xl border border-brand-border bg-white p-5 sm:grid-cols-2">
         <div className="sm:col-span-2">
@@ -70,21 +71,21 @@ export function BannerForm({ banner }: { banner?: Banner }) {
 
       <section className="rounded-2xl border border-brand-border bg-white p-5">
         <h2 className="mb-3 font-display text-lg font-semibold text-brand-text">Imagem</h2>
-        {preview && (
-          <div className="relative mb-4 aspect-[3/1] w-full max-w-lg overflow-hidden rounded-xl bg-brand-tint">
-            <Image src={preview} alt="" fill className="object-cover" />
-          </div>
-        )}
-        <input
-          type="file"
-          name="image"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) setPreview(URL.createObjectURL(file));
-          }}
-          className="text-sm text-brand-text"
-        />
+        <div className="max-w-xs">
+          <ImageDropzone
+            name="image"
+            preview={preview}
+            onFiles={(files) => {
+              const file = files[0];
+              if (!file) return;
+              setPreview(URL.createObjectURL(file));
+            }}
+            onRemove={() => {
+              setPreview(null);
+              setExistingUrl(null);
+            }}
+          />
+        </div>
       </section>
 
       <div className="flex justify-end">

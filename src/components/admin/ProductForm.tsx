@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Plus, X } from "lucide-react";
 import { saveProductAction } from "@/app/admin/actions";
+import { ImageDropzone } from "@/components/admin/ImageDropzone";
 import type { CategoryWithChildren, ProductWithRelations } from "@/lib/queries";
 
 type VariationRow = { label: string; value: string; stock: number };
@@ -34,8 +35,7 @@ export function ProductForm({
     setRemovedIds((ids) => [...ids, id]);
   }
 
-  function handleNewImages(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
+  function handleNewImages(files: File[]) {
     setNewImagePreviews(files.map((f) => URL.createObjectURL(f)));
   }
 
@@ -261,15 +261,10 @@ export function ProductForm({
               <Image src={src} alt="" fill sizes="96px" className="object-cover" />
             </div>
           ))}
+          <div className="h-24 w-24">
+            <ImageDropzone name="images" multiple onFiles={handleNewImages} />
+          </div>
         </div>
-        <input
-          type="file"
-          name="images"
-          accept="image/*"
-          multiple
-          onChange={handleNewImages}
-          className="mt-4 text-sm text-brand-text"
-        />
       </section>
 
       <div className="flex justify-end gap-3">
