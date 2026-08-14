@@ -111,33 +111,51 @@ export type Database = {
       }
       customers: {
         Row: {
-          address: string | null
+          address_number: string | null
+          cep: string | null
+          city: string | null
+          complement: string | null
           cpf: string | null
           created_at: string
           email: string | null
           id: string
           name: string
+          neighborhood: string | null
           phone: string | null
+          state: string | null
+          street: string | null
           updated_at: string
         }
         Insert: {
-          address?: string | null
+          address_number?: string | null
+          cep?: string | null
+          city?: string | null
+          complement?: string | null
           cpf?: string | null
           created_at?: string
           email?: string | null
           id?: string
           name: string
+          neighborhood?: string | null
           phone?: string | null
+          state?: string | null
+          street?: string | null
           updated_at?: string
         }
         Update: {
-          address?: string | null
+          address_number?: string | null
+          cep?: string | null
+          city?: string | null
+          complement?: string | null
           cpf?: string | null
           created_at?: string
           email?: string | null
           id?: string
           name?: string
+          neighborhood?: string | null
           phone?: string | null
+          state?: string | null
+          street?: string | null
           updated_at?: string
         }
         Relationships: []

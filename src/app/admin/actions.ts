@@ -259,12 +259,29 @@ export async function saveCustomerAction(formData: FormData) {
   const email = (formData.get("email") as string)?.trim() || null;
   const cpfRaw = (formData.get("cpf") as string) || "";
   const cpf = cpfRaw ? onlyDigits(cpfRaw) : null;
-  const address = (formData.get("address") as string)?.trim() || null;
+  const cepRaw = (formData.get("cep") as string) || "";
+  const cep = cepRaw ? onlyDigits(cepRaw) : null;
+  const street = (formData.get("street") as string)?.trim() || null;
+  const addressNumber = (formData.get("address_number") as string)?.trim() || null;
+  const complement = (formData.get("complement") as string)?.trim() || null;
+  const neighborhood = (formData.get("neighborhood") as string)?.trim() || null;
+  const city = (formData.get("city") as string)?.trim() || null;
+  const state = (formData.get("state") as string)?.trim() || null;
+
+  const addressFields = {
+    cep,
+    street,
+    address_number: addressNumber,
+    complement,
+    neighborhood,
+    city,
+    state,
+  };
 
   if (id) {
     const { error } = await supabase
       .from("customers")
-      .update({ name, phone, email, cpf, address, updated_at: new Date().toISOString() })
+      .update({ name, phone, email, cpf, ...addressFields, updated_at: new Date().toISOString() })
       .eq("id", id);
     if (error) throw new Error(error.message);
     revalidatePath("/admin/clientes");
@@ -273,7 +290,7 @@ export async function saveCustomerAction(formData: FormData) {
   } else {
     const { data, error } = await supabase
       .from("customers")
-      .insert({ name, phone, email, cpf, address })
+      .insert({ name, phone, email, cpf, ...addressFields })
       .select("id")
       .single();
     if (error) throw new Error(error.message);

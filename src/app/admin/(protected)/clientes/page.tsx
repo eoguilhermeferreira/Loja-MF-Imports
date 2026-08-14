@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { DeleteCustomerButton } from "@/components/admin/DeleteCustomerButton";
+import { WhatsAppSendCustomer } from "@/components/admin/WhatsAppSendCustomer";
 
 export default async function AdminClientesPage({
   searchParams,
@@ -54,6 +55,7 @@ export default async function AdminClientesPage({
               <th className="px-4 py-3">Telefone</th>
               <th className="px-4 py-3">E-mail</th>
               <th className="px-4 py-3" />
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
@@ -69,6 +71,13 @@ export default async function AdminClientesPage({
                 </td>
                 <td className="px-4 py-3 text-brand-muted">{customer.phone ?? "—"}</td>
                 <td className="px-4 py-3 text-brand-muted">{customer.email ?? "—"}</td>
+                <td className="px-4 py-3">
+                  <WhatsAppSendCustomer
+                    customerName={customer.name}
+                    customerPhone={customer.phone}
+                    compact
+                  />
+                </td>
                 <td className="px-4 py-3 text-right">
                   <DeleteCustomerButton id={customer.id} />
                 </td>
