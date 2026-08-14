@@ -10,6 +10,8 @@ export function ImageDropzone({
   onFiles,
   onRemove,
   multiple = false,
+  aspectClassName = "aspect-square",
+  hint,
   className = "",
 }: {
   name?: string;
@@ -17,6 +19,8 @@ export function ImageDropzone({
   onFiles: (files: File[]) => void;
   onRemove?: () => void;
   multiple?: boolean;
+  aspectClassName?: string;
+  hint?: string;
   className?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -28,6 +32,7 @@ export function ImageDropzone({
   }
 
   return (
+    <div>
     <div
       onDragOver={(e) => {
         e.preventDefault();
@@ -41,7 +46,7 @@ export function ImageDropzone({
         handleFiles(e.dataTransfer.files);
       }}
       onClick={() => inputRef.current?.click()}
-      className={`group relative flex aspect-square cursor-pointer flex-col items-center justify-center gap-1.5 overflow-hidden rounded-2xl border-2 border-dashed p-3 text-center transition-colors ${
+      className={`group relative flex ${aspectClassName} cursor-pointer flex-col items-center justify-center gap-1.5 overflow-hidden rounded-2xl border-2 border-dashed p-3 text-center transition-colors ${
         dragging
           ? "border-brand-primary bg-brand-tint"
           : "border-brand-border bg-brand-tint/40 hover:border-brand-primary/60"
@@ -93,6 +98,8 @@ export function ImageDropzone({
           e.target.value = "";
         }}
       />
+    </div>
+    {hint && <p className="mt-1.5 text-[11px] leading-relaxed text-brand-muted">{hint}</p>}
     </div>
   );
 }

@@ -71,10 +71,12 @@ export function BannerForm({ banner }: { banner?: Banner }) {
 
       <section className="rounded-2xl border border-brand-border bg-white p-5">
         <h2 className="mb-3 font-display text-lg font-semibold text-brand-text">Imagem</h2>
-        <div className="max-w-xs">
+        <div className="max-w-md">
           <ImageDropzone
             name="image"
             preview={preview}
+            aspectClassName="aspect-[3/1]"
+            hint="Tamanho ideal: 1920 x 640px (proporção 3:1). No celular a imagem é cortada nas laterais, mostrando só a faixa central — mantenha texto e elementos importantes dentro dos 55% centrais da largura."
             onFiles={(files) => {
               const file = files[0];
               if (!file) return;

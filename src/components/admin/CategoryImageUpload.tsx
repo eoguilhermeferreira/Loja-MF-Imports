@@ -18,10 +18,11 @@ export function CategoryImageUpload({
   return (
     <form ref={formRef} action={updateCategoryImageAction} className="flex items-center gap-4">
       <input type="hidden" name="id" value={categoryId} />
-      <div className="w-20">
+      <div className="w-28">
         <ImageDropzone
           name="image"
           preview={preview}
+          hint="Ideal: 800 x 800px"
           onFiles={(files) => {
             const file = files[0];
             if (!file) return;

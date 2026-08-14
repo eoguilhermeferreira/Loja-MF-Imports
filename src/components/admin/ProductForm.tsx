@@ -265,6 +265,9 @@ export function ProductForm({
             <ImageDropzone name="images" multiple onFiles={handleNewImages} />
           </div>
         </div>
+        <p className="mt-3 text-[11px] leading-relaxed text-brand-muted">
+          Ideal: 1200 x 1200px (imagem quadrada). A primeira foto é a capa do produto.
+        </p>
       </section>
 
       <div className="flex justify-end gap-3">
