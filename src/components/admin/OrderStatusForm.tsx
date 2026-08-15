@@ -12,7 +12,7 @@ const PAYMENT_OPTIONS: Enums<"payment_status_enum">[] = [
 ];
 
 const DELIVERY_OPTIONS: Enums<"delivery_status_enum">[] = [
-  "processando",
+  "recebido",
   "preparando",
   "enviado",
   "entregue",
@@ -31,6 +31,7 @@ export function OrderStatusForm({
   trackingUrl: string | null;
 }) {
   const [saved, setSaved] = useState(false);
+  const [selectedDeliveryStatus, setSelectedDeliveryStatus] = useState(deliveryStatus);
 
   return (
     <form
@@ -60,7 +61,12 @@ export function OrderStatusForm({
         <label className="mb-1.5 block text-sm font-medium text-brand-text">
           Status de entrega
         </label>
-        <select name="delivery_status" defaultValue={deliveryStatus} className="input-mf w-full">
+        <select
+          name="delivery_status"
+          value={selectedDeliveryStatus}
+          onChange={(e) => setSelectedDeliveryStatus(e.target.value as Enums<"delivery_status_enum">)}
+          className="input-mf w-full"
+        >
           {DELIVERY_OPTIONS.map((opt) => (
             <option key={opt} value={opt}>
               {opt}
@@ -69,17 +75,19 @@ export function OrderStatusForm({
         </select>
       </div>
 
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-brand-text">
-          Link de rastreio
-        </label>
-        <input
-          name="tracking_url"
-          defaultValue={trackingUrl ?? ""}
-          placeholder="https://rastreamento.correios..."
-          className="input-mf w-full"
-        />
-      </div>
+      {selectedDeliveryStatus === "enviado" && (
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-brand-text">
+            Código / link de rastreio
+          </label>
+          <input
+            name="tracking_url"
+            defaultValue={trackingUrl ?? ""}
+            placeholder="https://rastreamento.correios..."
+            className="input-mf w-full"
+          />
+        </div>
+      )}
 
       <button
         type="submit"

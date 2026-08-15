@@ -420,7 +420,7 @@ export type Database = {
     }
     Enums: {
       delivery_status_enum:
-        | "processando"
+        | "recebido"
         | "preparando"
         | "enviado"
         | "entregue"
@@ -556,7 +556,7 @@ export const Constants = {
   public: {
     Enums: {
       delivery_status_enum: [
-        "processando",
+        "recebido",
         "preparando",
         "enviado",
         "entregue",

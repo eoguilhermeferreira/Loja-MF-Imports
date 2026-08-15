@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { Info, Lock } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
@@ -9,6 +9,35 @@ import { formatPrice } from "@/lib/format";
 export function CheckoutPageContent() {
   const { items, subtotal, isHydrated } = useCart();
   const [showNotice, setShowNotice] = useState(false);
+  const streetRef = useRef<HTMLInputElement>(null);
+  const bairroRef = useRef<HTMLInputElement>(null);
+  const cidadeRef = useRef<HTMLInputElement>(null);
+  const estadoRef = useRef<HTMLInputElement>(null);
+  const numeroRef = useRef<HTMLInputElement>(null);
+  const [cepStatus, setCepStatus] = useState<"idle" | "loading" | "error">("idle");
+
+  async function handleCepBlur(e: React.FocusEvent<HTMLInputElement>) {
+    const digits = e.target.value.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+
+    setCepStatus("loading");
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = await res.json();
+      if (data.erro) {
+        setCepStatus("error");
+        return;
+      }
+      if (streetRef.current) streetRef.current.value = data.logradouro ?? "";
+      if (bairroRef.current) bairroRef.current.value = data.bairro ?? "";
+      if (cidadeRef.current) cidadeRef.current.value = data.localidade ?? "";
+      if (estadoRef.current) estadoRef.current.value = data.uf ?? "";
+      setCepStatus("idle");
+      numeroRef.current?.focus();
+    } catch {
+      setCepStatus("error");
+    }
+  }
 
   if (isHydrated && items.length === 0) {
     return (
@@ -56,13 +85,44 @@ export function CheckoutPageContent() {
               Endereço de entrega
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
-              <input required placeholder="CEP" className="input-mf sm:col-span-1" />
-              <input required placeholder="Rua" className="input-mf sm:col-span-3" />
-              <input required placeholder="Número" className="input-mf sm:col-span-1" />
+              <input
+                required
+                placeholder="CEP"
+                onBlur={handleCepBlur}
+                className="input-mf sm:col-span-1"
+              />
+              <input
+                ref={streetRef}
+                required
+                placeholder="Rua"
+                className="input-mf sm:col-span-3"
+              />
+              <input ref={numeroRef} required placeholder="Número" className="input-mf sm:col-span-1" />
               <input placeholder="Complemento" className="input-mf sm:col-span-1" />
-              <input required placeholder="Bairro" className="input-mf sm:col-span-2" />
-              <input required placeholder="Cidade" className="input-mf sm:col-span-2" />
-              <input required placeholder="Estado" className="input-mf sm:col-span-2" />
+              <input
+                ref={bairroRef}
+                required
+                placeholder="Bairro"
+                className="input-mf sm:col-span-2"
+              />
+              <input
+                ref={cidadeRef}
+                required
+                placeholder="Cidade"
+                className="input-mf sm:col-span-2"
+              />
+              <input
+                ref={estadoRef}
+                required
+                placeholder="Estado"
+                className="input-mf sm:col-span-2"
+              />
+              {cepStatus === "loading" && (
+                <p className="text-xs text-brand-muted sm:col-span-4">Buscando endereço...</p>
+              )}
+              {cepStatus === "error" && (
+                <p className="text-xs text-red-500 sm:col-span-4">CEP não encontrado.</p>
+              )}
             </div>
           </section>
 

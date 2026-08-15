@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { sendOrderStatusEmail } from "@/lib/email";
 import type { Enums } from "@/types/database.types";
 
 export async function logoutAction() {
@@ -337,6 +338,12 @@ export async function updateOrderStatusAction(formData: FormData) {
   const deliveryStatus = formData.get("delivery_status") as Enums<"delivery_status_enum">;
   const trackingUrl = (formData.get("tracking_url") as string) || null;
 
+  const { data: previous } = await supabase
+    .from("orders")
+    .select("payment_status, delivery_status, customer_email, customer_name, order_number")
+    .eq("id", id)
+    .single();
+
   const { error } = await supabase
     .from("orders")
     .update({
@@ -347,6 +354,25 @@ export async function updateOrderStatusAction(formData: FormData) {
     })
     .eq("id", id);
   if (error) throw new Error(error.message);
+
+  const statusChanged =
+    previous &&
+    (previous.payment_status !== paymentStatus || previous.delivery_status !== deliveryStatus);
+
+  if (statusChanged && previous) {
+    try {
+      await sendOrderStatusEmail({
+        to: previous.customer_email,
+        customerName: previous.customer_name,
+        orderNumber: previous.order_number,
+        paymentStatus,
+        deliveryStatus,
+        trackingUrl,
+      });
+    } catch (err) {
+      console.error("Falha ao enviar e-mail de status do pedido:", err);
+    }
+  }
 
   revalidatePath(`/admin/pedidos/${id}`);
   revalidatePath("/admin/pedidos");
