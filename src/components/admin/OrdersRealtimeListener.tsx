@@ -9,17 +9,27 @@ export function OrdersRealtimeListener() {
 
   useEffect(() => {
     const supabase = createClient();
-    const channel = supabase
-      .channel("orders-admin")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "orders" },
-        () => router.refresh()
-      )
-      .subscribe();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (cancelled) return;
+      if (session) {
+        supabase.realtime.setAuth(session.access_token);
+      }
+      channel = supabase
+        .channel("orders-admin")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "orders" },
+          () => router.refresh()
+        )
+        .subscribe();
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      if (channel) supabase.removeChannel(channel);
     };
   }, [router]);
 
