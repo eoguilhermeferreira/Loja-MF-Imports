@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { sendOrderStatusEmail } from "@/lib/email";
+import { sendOrderReceivedEmail } from "@/lib/email";
 
 type CheckoutItem = {
   productId: string;
@@ -78,13 +78,10 @@ export async function createOrderAction(formData: FormData) {
   if (itemsError) throw new Error(itemsError.message);
 
   try {
-    await sendOrderStatusEmail({
+    await sendOrderReceivedEmail({
       to: email,
       customerName: name,
       orderNumber: order.order_number,
-      paymentStatus: "pendente",
-      deliveryStatus: "recebido",
-      trackingUrl: null,
       items: items.map((item) => ({
         name: item.name,
         quantity: item.quantity,

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { sendOrderStatusEmail } from "@/lib/email";
+import { sendPaymentStatusEmail, sendDeliveryStatusEmail } from "@/lib/email";
 import type { Enums } from "@/types/database.types";
 
 export async function logoutAction() {
@@ -358,26 +358,26 @@ export async function updateOrderStatusAction(formData: FormData) {
     .eq("id", id);
   if (error) throw new Error(error.message);
 
-  const statusChanged =
-    previous &&
-    (previous.payment_status !== paymentStatus || previous.delivery_status !== deliveryStatus);
+  if (previous) {
+    const emailBase = {
+      to: previous.customer_email,
+      customerName: previous.customer_name,
+      orderNumber: previous.order_number,
+      items: (orderItems ?? []).map((item) => ({
+        name: item.product_name,
+        quantity: item.quantity,
+        unitPrice: item.unit_price,
+      })),
+      total: previous.total,
+    };
 
-  if (statusChanged && previous) {
     try {
-      await sendOrderStatusEmail({
-        to: previous.customer_email,
-        customerName: previous.customer_name,
-        orderNumber: previous.order_number,
-        paymentStatus,
-        deliveryStatus,
-        trackingUrl,
-        items: (orderItems ?? []).map((item) => ({
-          name: item.product_name,
-          quantity: item.quantity,
-          unitPrice: item.unit_price,
-        })),
-        total: previous.total,
-      });
+      if (previous.payment_status !== paymentStatus) {
+        await sendPaymentStatusEmail({ ...emailBase, paymentStatus });
+      }
+      if (previous.delivery_status !== deliveryStatus) {
+        await sendDeliveryStatusEmail({ ...emailBase, deliveryStatus, trackingUrl });
+      }
     } catch (err) {
       console.error("Falha ao enviar e-mail de status do pedido:", err);
     }
