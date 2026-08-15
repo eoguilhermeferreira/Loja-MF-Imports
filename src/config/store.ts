@@ -7,7 +7,7 @@ export const STORE_INFO = {
   whatsappNumber: "5514996136527",
   whatsappMessage: "Olá! Vim da loja online e gostaria de tirar uma dúvida.",
   address: "Rua Clementina Frazilli Schiavão, 135",
-  email: "contato@mfimports.com.br",
+  email: "mfimportsavare@gmail.com",
   ownerName: "Moisés Faria",
 } as const;
 
