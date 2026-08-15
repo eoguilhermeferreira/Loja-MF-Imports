@@ -85,6 +85,12 @@ export async function createOrderAction(formData: FormData) {
       paymentStatus: "pendente",
       deliveryStatus: "recebido",
       trackingUrl: null,
+      items: items.map((item) => ({
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.price,
+      })),
+      total: subtotal,
     });
   } catch (err) {
     console.error("Falha ao enviar e-mail de pedido recebido:", err);

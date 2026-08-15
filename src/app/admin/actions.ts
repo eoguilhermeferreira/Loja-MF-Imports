@@ -338,11 +338,14 @@ export async function updateOrderStatusAction(formData: FormData) {
   const deliveryStatus = formData.get("delivery_status") as Enums<"delivery_status_enum">;
   const trackingUrl = (formData.get("tracking_url") as string) || null;
 
-  const { data: previous } = await supabase
-    .from("orders")
-    .select("payment_status, delivery_status, customer_email, customer_name, order_number")
-    .eq("id", id)
-    .single();
+  const [{ data: previous }, { data: orderItems }] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("payment_status, delivery_status, customer_email, customer_name, order_number, total")
+      .eq("id", id)
+      .single(),
+    supabase.from("order_items").select("product_name, quantity, unit_price").eq("order_id", id),
+  ]);
 
   const { error } = await supabase
     .from("orders")
@@ -368,6 +371,12 @@ export async function updateOrderStatusAction(formData: FormData) {
         paymentStatus,
         deliveryStatus,
         trackingUrl,
+        items: (orderItems ?? []).map((item) => ({
+          name: item.product_name,
+          quantity: item.quantity,
+          unitPrice: item.unit_price,
+        })),
+        total: previous.total,
       });
     } catch (err) {
       console.error("Falha ao enviar e-mail de status do pedido:", err);
