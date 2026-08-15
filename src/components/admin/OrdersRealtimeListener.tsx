@@ -1,37 +1,24 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+
+const POLL_INTERVAL_MS = 6000;
 
 export function OrdersRealtimeListener() {
   const router = useRouter();
+  const routerRef = useRef(router);
+  routerRef.current = router;
 
   useEffect(() => {
-    const supabase = createClient();
-    let channel: ReturnType<typeof supabase.channel> | null = null;
-    let cancelled = false;
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (cancelled) return;
-      if (session) {
-        supabase.realtime.setAuth(session.access_token);
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        routerRef.current.refresh();
       }
-      channel = supabase
-        .channel("orders-admin")
-        .on(
-          "postgres_changes",
-          { event: "*", schema: "public", table: "orders" },
-          () => router.refresh()
-        )
-        .subscribe();
-    });
+    }, POLL_INTERVAL_MS);
 
-    return () => {
-      cancelled = true;
-      if (channel) supabase.removeChannel(channel);
-    };
-  }, [router]);
+    return () => clearInterval(interval);
+  }, []);
 
   return null;
 }
