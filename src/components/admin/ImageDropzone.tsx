@@ -93,10 +93,7 @@ export function ImageDropzone({
         multiple={multiple}
         className="hidden"
         onClick={(e) => e.stopPropagation()}
-        onChange={(e) => {
-          handleFiles(e.target.files);
-          e.target.value = "";
-        }}
+        onChange={(e) => handleFiles(e.target.files)}
       />
     </div>
     {hint && <p className="mt-1.5 text-[11px] leading-relaxed text-brand-muted">{hint}</p>}
