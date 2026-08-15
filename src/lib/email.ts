@@ -58,6 +58,13 @@ function buildStatusEmail({
     };
   }
 
+  if (paymentStatus === "pendente" && deliveryStatus === "recebido") {
+    return {
+      subject: `Recebemos seu pedido #${orderNumber}`,
+      html: `<p>${greeting}</p><p>A MF Imports agradece a sua escolha! Recebemos seu pedido <strong>#${orderNumber}</strong>.</p><p>O pagamento ainda está pendente — assim que confirmarmos, avisamos por aqui e já colocamos seu pedido em preparação.</p>`,
+    };
+  }
+
   if (deliveryStatus === "preparando") {
     return {
       subject: `Seu pedido #${orderNumber} está sendo preparado`,

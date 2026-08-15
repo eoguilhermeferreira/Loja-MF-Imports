@@ -1,14 +1,25 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Info, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { formatPrice } from "@/lib/format";
+import { createOrderAction } from "@/app/checkout/actions";
+
+const PAYMENT_METHODS = [
+  { value: "pix", label: "Pix" },
+  { value: "cartao_credito", label: "Cartão de crédito" },
+  { value: "cartao_debito", label: "Cartão de débito" },
+  { value: "boleto", label: "Boleto" },
+] as const;
 
 export function CheckoutPageContent() {
-  const { items, subtotal, isHydrated } = useCart();
-  const [showNotice, setShowNotice] = useState(false);
+  const router = useRouter();
+  const { items, subtotal, isHydrated, clearCart } = useCart();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const streetRef = useRef<HTMLInputElement>(null);
   const bairroRef = useRef<HTMLInputElement>(null);
   const cidadeRef = useRef<HTMLInputElement>(null);
@@ -39,6 +50,35 @@ export function CheckoutPageContent() {
     }
   }
 
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const formData = new FormData(e.currentTarget);
+    formData.set(
+      "items",
+      JSON.stringify(
+        items.map((item) => ({
+          productId: item.productId,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          variationLabel: item.variationLabel,
+          variationValue: item.variationValue,
+        }))
+      )
+    );
+
+    startTransition(async () => {
+      try {
+        await createOrderAction(formData);
+        clearCart();
+        router.push("/checkout/sucesso");
+      } catch {
+        setError("Não foi possível confirmar seu pedido. Tente novamente.");
+      }
+    });
+  }
+
   if (isHydrated && items.length === 0) {
     return (
       <div className="container-mf flex flex-col items-center gap-4 py-24 text-center">
@@ -61,22 +101,21 @@ export function CheckoutPageContent() {
         Finalizar compra
       </h1>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          setShowNotice(true);
-        }}
-        className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-3"
-      >
+      <form onSubmit={handleSubmit} className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-3">
         <div className="flex flex-col gap-8 lg:col-span-2">
           <section>
             <h2 className="font-display text-lg font-semibold text-brand-text">
               Seus dados
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <input required placeholder="Nome completo" className="input-mf sm:col-span-2" />
-              <input required type="email" placeholder="E-mail" className="input-mf" />
-              <input required placeholder="WhatsApp / Telefone" className="input-mf" />
+              <input
+                name="name"
+                required
+                placeholder="Nome completo"
+                className="input-mf sm:col-span-2"
+              />
+              <input name="email" required type="email" placeholder="E-mail" className="input-mf" />
+              <input name="phone" required placeholder="WhatsApp / Telefone" className="input-mf" />
             </div>
           </section>
 
@@ -86,6 +125,7 @@ export function CheckoutPageContent() {
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-4">
               <input
+                name="cep"
                 required
                 placeholder="CEP"
                 onBlur={handleCepBlur}
@@ -93,26 +133,36 @@ export function CheckoutPageContent() {
               />
               <input
                 ref={streetRef}
+                name="street"
                 required
                 placeholder="Rua"
                 className="input-mf sm:col-span-3"
               />
-              <input ref={numeroRef} required placeholder="Número" className="input-mf sm:col-span-1" />
-              <input placeholder="Complemento" className="input-mf sm:col-span-1" />
+              <input
+                ref={numeroRef}
+                name="number"
+                required
+                placeholder="Número"
+                className="input-mf sm:col-span-1"
+              />
+              <input name="complement" placeholder="Complemento" className="input-mf sm:col-span-1" />
               <input
                 ref={bairroRef}
+                name="bairro"
                 required
                 placeholder="Bairro"
                 className="input-mf sm:col-span-2"
               />
               <input
                 ref={cidadeRef}
+                name="cidade"
                 required
                 placeholder="Cidade"
                 className="input-mf sm:col-span-2"
               />
               <input
                 ref={estadoRef}
+                name="estado"
                 required
                 placeholder="Estado"
                 className="input-mf sm:col-span-2"
@@ -131,13 +181,19 @@ export function CheckoutPageContent() {
               Pagamento
             </h2>
             <div className="mt-4 flex flex-col gap-2.5">
-              {["Pix", "Cartão de crédito", "Cartão de débito", "Boleto"].map((method, i) => (
+              {PAYMENT_METHODS.map((method, i) => (
                 <label
-                  key={method}
+                  key={method.value}
                   className="flex cursor-pointer items-center gap-3 rounded-xl border border-brand-border px-4 py-3 text-sm font-medium text-brand-text has-[:checked]:border-brand-primary has-[:checked]:bg-brand-tint"
                 >
-                  <input type="radio" name="payment" defaultChecked={i === 0} className="accent-[var(--color-brand-primary)]" />
-                  {method}
+                  <input
+                    type="radio"
+                    name="payment_method"
+                    value={method.value}
+                    defaultChecked={i === 0}
+                    className="accent-[var(--color-brand-primary)]"
+                  />
+                  {method.label}
                 </label>
               ))}
             </div>
@@ -176,19 +232,14 @@ export function CheckoutPageContent() {
 
           <button
             type="submit"
-            className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-primary px-6 py-3.5 text-sm font-semibold text-white hover:bg-brand-primary-dark"
+            disabled={isPending}
+            className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-primary px-6 py-3.5 text-sm font-semibold text-white hover:bg-brand-primary-dark disabled:opacity-60"
           >
             <Lock className="h-4 w-4" strokeWidth={2} />
-            Confirmar pedido
+            {isPending ? "Confirmando..." : "Confirmar pedido"}
           </button>
 
-          {showNotice && (
-            <p className="mt-4 flex items-start gap-2 rounded-xl bg-brand-tint p-3 text-xs text-brand-text/80">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand-primary" strokeWidth={1.75} />
-              O pagamento online está sendo configurado. Fale com a gente no WhatsApp para
-              concluir seu pedido agora mesmo.
-            </p>
-          )}
+          {error && <p className="mt-4 text-xs text-red-500">{error}</p>}
         </div>
       </form>
     </div>
