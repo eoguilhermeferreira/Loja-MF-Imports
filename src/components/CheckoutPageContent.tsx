@@ -6,7 +6,8 @@ import Link from "next/link";
 import { Lock } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { formatPrice } from "@/lib/format";
-import { createOrderAction } from "@/app/checkout/actions";
+import { createOrderAction, calculateShippingAction } from "@/app/checkout/actions";
+import type { ShippingOption } from "@/lib/shipping";
 
 const PAYMENT_METHODS = [
   { value: "pix", label: "Pix" },
@@ -26,6 +27,33 @@ export function CheckoutPageContent() {
   const estadoRef = useRef<HTMLInputElement>(null);
   const numeroRef = useRef<HTMLInputElement>(null);
   const [cepStatus, setCepStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
+  const [selectedShippingId, setSelectedShippingId] = useState<number | null>(null);
+  const [shippingStatus, setShippingStatus] = useState<"idle" | "loading" | "error">("idle");
+
+  const selectedShipping = shippingOptions.find((o) => o.id === selectedShippingId) ?? null;
+  const shippingCost = selectedShipping?.price ?? 0;
+
+  async function fetchShipping(digits: string) {
+    setShippingStatus("loading");
+    setShippingOptions([]);
+    setSelectedShippingId(null);
+    try {
+      const options = await calculateShippingAction(
+        digits,
+        items.map((item) => ({ productId: item.productId, quantity: item.quantity }))
+      );
+      if (options.length === 0) {
+        setShippingStatus("error");
+        return;
+      }
+      setShippingOptions(options);
+      setSelectedShippingId(options[0].id);
+      setShippingStatus("idle");
+    } catch {
+      setShippingStatus("error");
+    }
+  }
 
   async function handleCepBlur(e: React.FocusEvent<HTMLInputElement>) {
     const digits = e.target.value.replace(/\D/g, "");
@@ -45,6 +73,7 @@ export function CheckoutPageContent() {
       if (estadoRef.current) estadoRef.current.value = data.uf ?? "";
       setCepStatus("idle");
       numeroRef.current?.focus();
+      fetchShipping(digits);
     } catch {
       setCepStatus("error");
     }
@@ -53,6 +82,12 @@ export function CheckoutPageContent() {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+
+    if (!selectedShipping) {
+      setError("Selecione uma opção de frete antes de continuar.");
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
     formData.set(
       "items",
@@ -66,6 +101,11 @@ export function CheckoutPageContent() {
           variationValue: item.variationValue,
         }))
       )
+    );
+    formData.set("shipping_cost", String(selectedShipping.price));
+    formData.set(
+      "shipping_method",
+      `${selectedShipping.company} ${selectedShipping.name}`.trim()
     );
 
     startTransition(async () => {
@@ -178,6 +218,50 @@ export function CheckoutPageContent() {
 
           <section>
             <h2 className="font-display text-lg font-semibold text-brand-text">
+              Frete
+            </h2>
+            <div className="mt-4 flex flex-col gap-2.5">
+              {shippingStatus === "loading" && (
+                <p className="text-xs text-brand-muted">Calculando opções de frete...</p>
+              )}
+              {shippingStatus === "error" && (
+                <p className="text-xs text-red-500">
+                  Não foi possível calcular o frete para esse CEP. Confira o CEP informado.
+                </p>
+              )}
+              {shippingStatus === "idle" && shippingOptions.length === 0 && (
+                <p className="text-xs text-brand-muted">
+                  Informe o CEP acima para ver as opções de frete.
+                </p>
+              )}
+              {shippingOptions.map((option) => (
+                <label
+                  key={option.id}
+                  className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-brand-border px-4 py-3 text-sm font-medium text-brand-text has-[:checked]:border-brand-primary has-[:checked]:bg-brand-tint"
+                >
+                  <span className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="shipping_option"
+                      checked={selectedShippingId === option.id}
+                      onChange={() => setSelectedShippingId(option.id)}
+                      className="accent-[var(--color-brand-primary)]"
+                    />
+                    <span>
+                      {option.company} {option.name}
+                      <span className="block text-xs font-normal text-brand-muted">
+                        Até {option.deliveryTime} dias úteis
+                      </span>
+                    </span>
+                  </span>
+                  <span className="shrink-0">{formatPrice(option.price)}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="font-display text-lg font-semibold text-brand-text">
               Pagamento
             </h2>
             <div className="mt-4 flex flex-col gap-2.5">
@@ -223,16 +307,16 @@ export function CheckoutPageContent() {
           </div>
           <div className="mt-1 flex justify-between text-sm text-brand-text/80">
             <span>Frete</span>
-            <span>A calcular</span>
+            <span>{selectedShipping ? formatPrice(shippingCost) : "A calcular"}</span>
           </div>
           <div className="mt-3 flex justify-between border-t border-brand-border pt-3 font-display text-base font-semibold text-brand-text">
             <span>Total</span>
-            <span>{formatPrice(subtotal)}</span>
+            <span>{formatPrice(subtotal + shippingCost)}</span>
           </div>
 
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || !selectedShipping}
             className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-primary px-6 py-3.5 text-sm font-semibold text-white hover:bg-brand-primary-dark disabled:opacity-60"
           >
             <Lock className="h-4 w-4" strokeWidth={2} />

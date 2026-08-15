@@ -1,3 +1,5 @@
+export const SHIPPING_ORIGIN_CEP = "18701302";
+
 export const STORE_INFO = {
   name: "MF Imports",
   tagline: "Variedades importadas com curadoria e confiança",

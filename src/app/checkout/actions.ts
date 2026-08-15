@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { sendOrderReceivedEmail } from "@/lib/email";
+import { calculateShipping, type ShippingOption } from "@/lib/shipping";
 
 type CheckoutItem = {
   productId: string;
@@ -11,6 +12,34 @@ type CheckoutItem = {
   variationLabel: string | null;
   variationValue: string | null;
 };
+
+export async function calculateShippingAction(
+  cep: string,
+  items: { productId: string; quantity: number }[]
+): Promise<ShippingOption[]> {
+  const digits = cep.replace(/\D/g, "");
+  if (digits.length !== 8) throw new Error("CEP inválido.");
+  if (items.length === 0) return [];
+
+  const supabase = await createClient();
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("id, weight_grams")
+    .in(
+      "id",
+      items.map((item) => item.productId)
+    );
+
+  if (error) throw new Error(error.message);
+
+  const weightByProduct = new Map(products.map((p) => [p.id, p.weight_grams]));
+  const shippingItems = items.map((item) => ({
+    weightGrams: weightByProduct.get(item.productId) ?? 200,
+    quantity: item.quantity,
+  }));
+
+  return calculateShipping(digits, shippingItems);
+}
 
 export async function createOrderAction(formData: FormData) {
   const supabase = await createClient();
@@ -31,11 +60,15 @@ export async function createOrderAction(formData: FormData) {
     | "cartao_debito"
     | "boleto";
   const itemsRaw = formData.get("items") as string;
+  const shippingCost = Number(formData.get("shipping_cost") || 0);
+  const shippingMethod = (formData.get("shipping_method") as string) || null;
 
   const items: CheckoutItem[] = JSON.parse(itemsRaw || "[]");
   if (items.length === 0) throw new Error("Carrinho vazio.");
+  if (!shippingMethod || shippingCost <= 0) throw new Error("Selecione uma opção de frete.");
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = subtotal + shippingCost;
 
   const shippingAddress = {
     CEP: cep,
@@ -55,8 +88,9 @@ export async function createOrderAction(formData: FormData) {
       customer_phone: phone,
       shipping_address: shippingAddress,
       subtotal,
-      shipping_cost: 0,
-      total: subtotal,
+      shipping_cost: shippingCost,
+      shipping_method: shippingMethod,
+      total,
       payment_method: paymentMethod,
     })
     .select("id, order_number")
@@ -87,7 +121,7 @@ export async function createOrderAction(formData: FormData) {
         quantity: item.quantity,
         unitPrice: item.price,
       })),
-      total: subtotal,
+      total,
     });
   } catch (err) {
     console.error("Falha ao enviar e-mail de pedido recebido:", err);
