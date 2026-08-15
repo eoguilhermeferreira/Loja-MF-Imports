@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
-import { OrdersRealtimeListener } from "@/components/admin/OrdersRealtimeListener";
 
 const PAYMENT_LABELS: Record<string, string> = {
   pendente: "Pendente",
@@ -11,7 +10,7 @@ const PAYMENT_LABELS: Record<string, string> = {
 };
 
 const DELIVERY_LABELS: Record<string, string> = {
-  processando: "Processando",
+  recebido: "Recebido",
   preparando: "Preparando",
   enviado: "Enviado",
   entregue: "Entregue",
@@ -27,7 +26,6 @@ export default async function AdminPedidosPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <OrdersRealtimeListener />
       <h1 className="font-display text-2xl font-semibold text-brand-text">Pedidos</h1>
 
       <div className="overflow-x-auto rounded-2xl border border-brand-border bg-white">

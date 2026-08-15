@@ -12,6 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { Logo } from "@/components/Logo";
 import { logoutAction } from "@/app/admin/actions";
+import { OrdersRealtimeListener } from "@/components/admin/OrdersRealtimeListener";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -40,6 +41,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex min-h-screen bg-brand-tint">
+      <OrdersRealtimeListener />
       <aside className="hidden w-64 shrink-0 flex-col border-r border-brand-border bg-white md:flex">
         <div className="border-b border-brand-border px-5 py-5">
           <Logo />
