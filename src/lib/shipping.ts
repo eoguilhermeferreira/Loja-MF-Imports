@@ -19,6 +19,10 @@ const MELHOR_ENVIO_URL = "https://melhorenvio.com.br/api/v2/me/shipment/calculat
 // e variamos apenas o peso somado do carrinho.
 const DEFAULT_DIMENSIONS = { width: 16, height: 11, length: 20 };
 
+// Transportadoras exibidas no checkout, na ordem de preferência da loja.
+const ALLOWED_COMPANIES = ["Loggi", "Correios", "Jadlog"];
+const MAX_OPTIONS_PER_COMPANY = 2;
+
 export async function calculateShipping(
   destinationCep: string,
   items: ShippingItem[]
@@ -66,7 +70,7 @@ export async function calculateShipping(
     throw new Error("Resposta inesperada do Melhor Envio.");
   }
 
-  return data
+  const options: ShippingOption[] = data
     .filter((option) => !option.error && option.price)
     .map((option) => ({
       id: option.id,
@@ -75,5 +79,16 @@ export async function calculateShipping(
       price: Number(option.price),
       deliveryTime: Number(option.delivery_time),
     }))
+    .filter((option) => ALLOWED_COMPANIES.includes(option.company))
     .sort((a, b) => a.price - b.price);
+
+  const countByCompany = new Map<string, number>();
+  const limited = options.filter((option) => {
+    const count = countByCompany.get(option.company) ?? 0;
+    if (count >= MAX_OPTIONS_PER_COMPANY) return false;
+    countByCompany.set(option.company, count + 1);
+    return true;
+  });
+
+  return limited.sort((a, b) => a.price - b.price);
 }
