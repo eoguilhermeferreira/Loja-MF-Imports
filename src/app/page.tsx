@@ -43,7 +43,7 @@ export default async function Home() {
         description="Seleção de perfumes árabes com alta fixação e notas exclusivas, direto para você sentir a diferença desde o primeiro borrifo."
         href="/categoria/perfumes"
         hrefLabel="Ver perfumes"
-        image="https://images.unsplash.com/photo-1615634260167-c8cdede054de?w=1200&q=80"
+        image="/perfumaria-arabe.jpg"
       />
 
       {novidades.length > 0 && (
@@ -84,7 +84,7 @@ export default async function Home() {
         description="Trabalhamos com fornecedores selecionados para garantir autenticidade, suporte e a melhor experiência em cada compra."
         href="/categoria/celulares"
         hrefLabel="Ver eletrônicos"
-        image="https://images.unsplash.com/photo-1580910051074-3eb694886505?w=1200&q=80"
+        image="/tecnologia-celulares.jpg"
         reverse
       />
 
