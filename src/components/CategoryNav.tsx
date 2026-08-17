@@ -44,6 +44,10 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
 
     function normalize() {
       if (!track) return;
+      // Não mexe no scrollLeft enquanto o usuário está tocando/arrastando:
+      // alterar a posição durante um gesto de toque ativo trava o momentum
+      // scroll nativo do iOS/Android.
+      if (pausedRef.current) return;
       const setWidth = track.scrollWidth / 3;
       if (track.scrollLeft < setWidth * 0.5) {
         track.scrollLeft += setWidth;

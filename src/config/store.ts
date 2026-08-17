@@ -35,7 +35,7 @@ export const BENEFITS = [
   },
   {
     title: "Parcelamento no cartão",
-    description: "Compre em até 12x com total segurança",
+    description: "Compre em até 12x sem juros com total segurança",
   },
   {
     title: "Suporte via WhatsApp",

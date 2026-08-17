@@ -23,7 +23,7 @@ export async function Footer() {
           <div className="flex items-center gap-3">
             <CreditCard className="h-6 w-6 shrink-0 text-brand-primary-light" strokeWidth={1.5} />
             <div>
-              <p className="text-sm font-semibold text-white">Parcele em até 12x</p>
+              <p className="text-sm font-semibold text-white">Parcele em até 12x sem juros</p>
               <p className="text-xs text-white/60">Pix, cartão ou boleto</p>
             </div>
           </div>
@@ -120,7 +120,13 @@ export async function Footer() {
               </a>
             </li>
             <li>
-              <a href={STORE_INFO.instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:text-brand-primary-light">
+              <a
+                href={STORE_INFO.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 hover:text-brand-primary-light"
+              >
+                <InstagramIcon className="h-4 w-4 shrink-0 text-brand-primary-light" />
                 {STORE_INFO.instagram}
               </a>
             </li>
