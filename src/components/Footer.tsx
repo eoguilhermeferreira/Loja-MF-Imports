@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Truck, CreditCard } from "lucide-react";
+import { Mail, MapPin, Truck, CreditCard } from "lucide-react";
 import { InstagramIcon } from "@/components/icons/InstagramIcon";
 import { WhatsappIcon } from "@/components/icons/WhatsappIcon";
 import { STORE_INFO, AGENCY_CREDIT } from "@/config/store";
@@ -117,6 +117,15 @@ export async function Footer() {
               >
                 <WhatsappIcon className="h-4 w-4 shrink-0 text-brand-primary-light" />
                 {STORE_INFO.whatsapp}
+              </a>
+            </li>
+            <li>
+              <a
+                href={`mailto:${STORE_INFO.email}`}
+                className="flex items-center gap-2 hover:text-brand-primary-light"
+              >
+                <Mail className="h-4 w-4 shrink-0 text-brand-primary-light" strokeWidth={1.75} />
+                {STORE_INFO.email}
               </a>
             </li>
             <li>
