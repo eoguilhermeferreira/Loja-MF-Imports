@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -31,6 +31,15 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const pausedRef = useRef(false);
   const resumeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Em telas touch (celular/tablet) o carrossel automático fica desligado:
+  // qualquer JS mexendo no scrollLeft compete com o gesto de arrastar e
+  // trava a rolagem nativa do iOS/Android. No touch usamos scroll 100%
+  // nativo do navegador, sem nenhuma interferência.
+  const [autoScrollEnabled, setAutoScrollEnabled] = useState(false);
+
+  useEffect(() => {
+    setAutoScrollEnabled(!window.matchMedia("(pointer: coarse)").matches);
+  }, []);
 
   useLayoutEffect(() => {
     const track = trackRef.current;
@@ -39,15 +48,12 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
   }, [categories.length]);
 
   useEffect(() => {
+    if (!autoScrollEnabled) return;
     const track = trackRef.current;
     if (!track || categories.length === 0) return;
 
     function normalize() {
-      if (!track) return;
-      // Não mexe no scrollLeft enquanto o usuário está tocando/arrastando:
-      // alterar a posição durante um gesto de toque ativo trava o momentum
-      // scroll nativo do iOS/Android.
-      if (pausedRef.current) return;
+      if (!track || pausedRef.current) return;
       const setWidth = track.scrollWidth / 3;
       if (track.scrollLeft < setWidth * 0.5) {
         track.scrollLeft += setWidth;
@@ -58,9 +64,10 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
 
     track.addEventListener("scroll", normalize, { passive: true });
     return () => track.removeEventListener("scroll", normalize);
-  }, [categories.length]);
+  }, [categories.length, autoScrollEnabled]);
 
   useEffect(() => {
+    if (!autoScrollEnabled) return;
     const track = trackRef.current;
     if (!track || categories.length === 0) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -76,7 +83,7 @@ export function CategoryNav({ categories }: { categories: Category[] }) {
 
     frameId = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frameId);
-  }, [categories.length]);
+  }, [categories.length, autoScrollEnabled]);
 
   useEffect(() => {
     return () => {
