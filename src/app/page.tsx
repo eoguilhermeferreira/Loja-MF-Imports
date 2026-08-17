@@ -38,9 +38,9 @@ export default async function Home() {
       />
 
       <EditorialBanner
-        eyebrow="Perfumaria importada"
+        eyebrow="Perfumaria árabe"
         title="Fragrâncias que marcam presença"
-        description="Seleção de perfumes importados com alta fixação e notas exclusivas, direto para você sentir a diferença desde o primeiro borrifo."
+        description="Seleção de perfumes árabes com alta fixação e notas exclusivas, direto para você sentir a diferença desde o primeiro borrifo."
         href="/categoria/perfumes"
         hrefLabel="Ver perfumes"
         image="https://images.unsplash.com/photo-1615634260167-c8cdede054de?w=1200&q=80"
