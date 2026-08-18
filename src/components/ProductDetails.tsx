@@ -36,7 +36,7 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
   const stock = groups.length > 0 ? selectedVariation?.stock ?? 0 : product.stock;
   const hasPromo = product.promo_price != null && product.promo_price < product.price;
   const price = hasPromo ? product.promo_price! : product.price;
-  const canAdd = groups.length === 0 || (allSelected && stock > 0);
+  const canAdd = product.is_active && (groups.length === 0 || (allSelected && stock > 0));
 
   function handleAddToCart() {
     if (!canAdd) return;
@@ -147,11 +147,13 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
           </button>
         </div>
         <p className="text-xs text-brand-muted">
-          {groups.length > 0 && !allSelected
-            ? "Selecione uma opção"
-            : stock > 0
-              ? `${stock} em estoque`
-              : "Sem estoque"}
+          {!product.is_active
+            ? "Produto indisponível no momento"
+            : groups.length > 0 && !allSelected
+              ? "Selecione uma opção"
+              : stock > 0
+                ? `${stock} em estoque`
+                : "Sem estoque"}
         </p>
       </div>
 

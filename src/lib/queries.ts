@@ -71,8 +71,8 @@ async function getProductsByHomeSection(section: "mais_vendidos" | "novidades" |
   const { data } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
-    .eq("is_active", true)
     .eq("home_section", section)
+    .order("is_active", { ascending: false })
     .order("created_at", { ascending: false })
     .limit(limit);
   return withImagesOrdered((data ?? []) as unknown as ProductWithRelations[]);
@@ -95,7 +95,7 @@ export async function getAllActiveProducts() {
   const { data } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
-    .eq("is_active", true)
+    .order("is_active", { ascending: false })
     .order("created_at", { ascending: false });
   return withImagesOrdered((data ?? []) as unknown as ProductWithRelations[]);
 }
@@ -105,8 +105,8 @@ export async function getProductsByCategoryId(categoryId: string) {
   const { data } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
-    .eq("is_active", true)
     .eq("category_id", categoryId)
+    .order("is_active", { ascending: false })
     .order("created_at", { ascending: false });
 
   return withImagesOrdered((data ?? []) as unknown as ProductWithRelations[]);
@@ -162,9 +162,9 @@ export async function getRelatedProducts(categoryId: string | null, excludeId: s
   const { data } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
-    .eq("is_active", true)
     .eq("category_id", categoryId)
     .neq("id", excludeId)
+    .order("is_active", { ascending: false })
     .limit(limit);
   return withImagesOrdered((data ?? []) as unknown as ProductWithRelations[]);
 }
@@ -174,8 +174,8 @@ export async function searchProducts(query: string) {
   const { data } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
-    .eq("is_active", true)
     .ilike("name", `%${query}%`)
+    .order("is_active", { ascending: false })
     .limit(20);
   return withImagesOrdered((data ?? []) as unknown as ProductWithRelations[]);
 }

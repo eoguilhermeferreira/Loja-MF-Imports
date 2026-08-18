@@ -27,7 +27,11 @@ export default async function ProdutoPage({ params }: Params) {
       <div className="container-mf py-6 md:py-10">
         <BackButton label="Voltar" />
         <div className="mt-5 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-14">
-          <ProductGallery images={product.images} productName={product.name} />
+          <ProductGallery
+            images={product.images}
+            productName={product.name}
+            unavailable={!product.is_active}
+          />
           <ProductDetails product={product} />
         </div>
       </div>

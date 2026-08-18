@@ -7,9 +7,11 @@ import type { ProductImage } from "@/lib/queries";
 export function ProductGallery({
   images,
   productName,
+  unavailable = false,
 }: {
   images: ProductImage[];
   productName: string;
+  unavailable?: boolean;
 }) {
   const [active, setActive] = useState(0);
   const current = images[active] ?? images[0];
@@ -40,8 +42,15 @@ export function ProductGallery({
             fill
             priority
             sizes="(min-width: 1024px) 45vw, 100vw"
-            className="object-cover"
+            className={`object-cover ${unavailable ? "grayscale" : ""}`}
           />
+        )}
+        {unavailable && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/50">
+            <span className="-rotate-12 rounded-md border-2 border-brand-black bg-white/90 px-5 py-1.5 text-sm font-bold uppercase tracking-wider text-brand-black">
+              Indisponível
+            </span>
+          </div>
         )}
       </div>
     </div>
