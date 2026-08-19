@@ -1,8 +1,10 @@
 "use server";
 
+import { Preference } from "mercadopago";
 import { createClient } from "@/lib/supabase/server";
 import { sendOrderReceivedEmail } from "@/lib/email";
 import { calculateShipping, type ShippingOption } from "@/lib/shipping";
+import { mercadoPagoClient } from "@/lib/mercadopago";
 
 type CheckoutItem = {
   productId: string;
@@ -127,5 +129,37 @@ export async function createOrderAction(formData: FormData) {
     console.error("Falha ao enviar e-mail de pedido recebido:", err);
   }
 
-  return { orderNumber: order.order_number };
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+
+  const preference = await new Preference(mercadoPagoClient).create({
+    body: {
+      items: [
+        ...items.map((item) => ({
+          id: item.productId,
+          title: item.name,
+          quantity: item.quantity,
+          unit_price: item.price,
+          currency_id: "BRL",
+        })),
+        {
+          id: "frete",
+          title: `Frete (${shippingMethod})`,
+          quantity: 1,
+          unit_price: shippingCost,
+          currency_id: "BRL",
+        },
+      ],
+      payer: { name, email },
+      external_reference: order.id,
+      back_urls: {
+        success: `${siteUrl}/checkout/sucesso`,
+        pending: `${siteUrl}/checkout/pendente`,
+        failure: `${siteUrl}/checkout/erro`,
+      },
+      auto_return: "approved",
+      notification_url: `${siteUrl}/api/webhooks/mercadopago`,
+    },
+  });
+
+  return { orderNumber: order.order_number, checkoutUrl: preference.init_point };
 }

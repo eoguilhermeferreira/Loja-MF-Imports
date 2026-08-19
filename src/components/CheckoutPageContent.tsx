@@ -110,9 +110,13 @@ export function CheckoutPageContent() {
 
     startTransition(async () => {
       try {
-        await createOrderAction(formData);
+        const result = await createOrderAction(formData);
         clearCart();
-        router.push("/checkout/sucesso");
+        if (result.checkoutUrl) {
+          window.location.href = result.checkoutUrl;
+        } else {
+          router.push("/checkout/sucesso");
+        }
       } catch {
         setError("Não foi possível confirmar seu pedido. Tente novamente.");
       }
