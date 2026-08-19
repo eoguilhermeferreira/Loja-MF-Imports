@@ -1,10 +1,12 @@
 "use server";
 
-import { Preference } from "mercadopago";
+import { randomUUID } from "crypto";
+import { Payment } from "mercadopago";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sendOrderReceivedEmail } from "@/lib/email";
 import { calculateShipping, type ShippingOption } from "@/lib/shipping";
-import { mercadoPagoClient } from "@/lib/mercadopago";
+import { mercadoPagoClient, mapMercadoPagoStatus } from "@/lib/mercadopago";
 
 type CheckoutItem = {
   productId: string;
@@ -129,37 +131,84 @@ export async function createOrderAction(formData: FormData) {
     console.error("Falha ao enviar e-mail de pedido recebido:", err);
   }
 
+  return { orderId: order.id, orderNumber: order.order_number, total, email };
+}
+
+export type PaymentSubmitResult =
+  | { ok: false; message: string }
+  | {
+      ok: true;
+      status: string;
+      statusDetail: string | null;
+      paymentId: string | null;
+      pixQrCode: string | null;
+      pixQrCodeBase64: string | null;
+      boletoUrl: string | null;
+      boletoBarcode: string | null;
+      boletoDigitableLine: string | null;
+    };
+
+export async function submitPaymentAction(
+  orderId: string,
+  brickFormData: Record<string, unknown>
+): Promise<PaymentSubmitResult> {
+  const supabase = createAdminClient();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, order_number, total, customer_email")
+    .eq("id", orderId)
+    .single();
+
+  if (!order) return { ok: false, message: "Pedido não encontrado." };
+
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 
-  const preference = await new Preference(mercadoPagoClient).create({
-    body: {
-      items: [
-        ...items.map((item) => ({
-          id: item.productId,
-          title: item.name,
-          quantity: item.quantity,
-          unit_price: item.price,
-          currency_id: "BRL",
-        })),
-        {
-          id: "frete",
-          title: `Frete (${shippingMethod})`,
-          quantity: 1,
-          unit_price: shippingCost,
-          currency_id: "BRL",
-        },
-      ],
-      payer: { name, email },
-      external_reference: order.id,
-      back_urls: {
-        success: `${siteUrl}/checkout/sucesso`,
-        pending: `${siteUrl}/checkout/pendente`,
-        failure: `${siteUrl}/checkout/erro`,
+  try {
+    const payment = await new Payment(mercadoPagoClient).create({
+      body: {
+        ...brickFormData,
+        transaction_amount: order.total,
+        description: `Pedido #${order.order_number} - MF Imports`,
+        external_reference: order.id,
+        notification_url: `${siteUrl}/api/webhooks/mercadopago`,
       },
-      auto_return: "approved",
-      notification_url: `${siteUrl}/api/webhooks/mercadopago`,
-    },
-  });
+      requestOptions: { idempotencyKey: randomUUID() },
+    });
 
-  return { orderNumber: order.order_number, checkoutUrl: preference.init_point };
+    const mappedStatus = mapMercadoPagoStatus(payment.status);
+    if (mappedStatus) {
+      await supabase
+        .from("orders")
+        .update({
+          payment_status: mappedStatus,
+          mercadopago_payment_id: payment.id ? String(payment.id) : null,
+        })
+        .eq("id", orderId);
+    }
+
+    return {
+      ok: true,
+      status: payment.status ?? "pending",
+      statusDetail: payment.status_detail ?? null,
+      paymentId: payment.id ? String(payment.id) : null,
+      pixQrCode: payment.point_of_interaction?.transaction_data?.qr_code ?? null,
+      pixQrCodeBase64: payment.point_of_interaction?.transaction_data?.qr_code_base64 ?? null,
+      boletoUrl: payment.transaction_details?.external_resource_url ?? null,
+      boletoBarcode: payment.transaction_details?.barcode?.content ?? null,
+      boletoDigitableLine: payment.transaction_details?.digitable_line ?? null,
+    };
+  } catch (err) {
+    console.error("Falha ao criar pagamento no Mercado Pago:", err);
+    return { ok: false, message: "Não foi possível processar o pagamento. Tente novamente." };
+  }
+}
+
+export async function getOrderPaymentStatusAction(orderId: string) {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("orders")
+    .select("payment_status")
+    .eq("id", orderId)
+    .single();
+  return data?.payment_status ?? null;
 }

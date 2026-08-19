@@ -1,24 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Payment } from "mercadopago";
-import { mercadoPagoClient } from "@/lib/mercadopago";
+import { mercadoPagoClient, mapMercadoPagoStatus } from "@/lib/mercadopago";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendPaymentStatusEmail } from "@/lib/email";
-import type { Enums } from "@/types/database.types";
-
-function mapPaymentStatus(status?: string): Enums<"payment_status_enum"> | null {
-  switch (status) {
-    case "approved":
-      return "pago";
-    case "rejected":
-    case "cancelled":
-      return "falhou";
-    case "refunded":
-    case "charged_back":
-      return "reembolsado";
-    default:
-      return null;
-  }
-}
 
 async function handleNotification(req: NextRequest) {
   const url = new URL(req.url);
@@ -36,7 +20,7 @@ async function handleNotification(req: NextRequest) {
 
   const payment = await new Payment(mercadoPagoClient).get({ id: paymentId });
   const orderId = payment.external_reference;
-  const status = mapPaymentStatus(payment.status);
+  const status = mapMercadoPagoStatus(payment.status);
   if (!orderId || !status) return NextResponse.json({ ok: true });
 
   const supabase = createAdminClient();

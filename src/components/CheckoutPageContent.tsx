@@ -7,6 +7,7 @@ import { Lock } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { formatPrice } from "@/lib/format";
 import { createOrderAction, calculateShippingAction } from "@/app/checkout/actions";
+import { PaymentBrickForm } from "@/components/checkout/PaymentBrickForm";
 import type { ShippingOption } from "@/lib/shipping";
 
 const PAYMENT_METHODS = [
@@ -15,6 +16,10 @@ const PAYMENT_METHODS = [
   { value: "cartao_debito", label: "Cartão de débito" },
   { value: "boleto", label: "Boleto" },
 ] as const;
+
+type PaymentMethod = (typeof PAYMENT_METHODS)[number]["value"];
+
+type OrderInfo = { orderId: string; orderNumber: number; total: number; email: string };
 
 export function CheckoutPageContent() {
   const router = useRouter();
@@ -30,6 +35,8 @@ export function CheckoutPageContent() {
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
   const [selectedShippingId, setSelectedShippingId] = useState<number | null>(null);
   const [shippingStatus, setShippingStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("pix");
+  const [orderInfo, setOrderInfo] = useState<OrderInfo | null>(null);
 
   const selectedShipping = shippingOptions.find((o) => o.id === selectedShippingId) ?? null;
   const shippingCost = selectedShipping?.price ?? 0;
@@ -111,16 +118,40 @@ export function CheckoutPageContent() {
     startTransition(async () => {
       try {
         const result = await createOrderAction(formData);
-        clearCart();
-        if (result.checkoutUrl) {
-          window.location.href = result.checkoutUrl;
-        } else {
-          router.push("/checkout/sucesso");
-        }
+        setOrderInfo(result);
       } catch {
         setError("Não foi possível confirmar seu pedido. Tente novamente.");
       }
     });
+  }
+
+  if (orderInfo) {
+    return (
+      <div className="container-mf py-10 md:py-14">
+        <h1 className="font-display text-2xl font-semibold text-brand-text md:text-3xl">
+          Pagamento
+        </h1>
+        <p className="mt-1.5 text-sm text-brand-muted">
+          Pedido #{orderInfo.orderNumber} — {formatPrice(orderInfo.total)}
+        </p>
+        <div className="mt-8 max-w-xl">
+          <PaymentBrickForm
+            orderId={orderInfo.orderId}
+            amount={orderInfo.total}
+            email={orderInfo.email}
+            paymentMethod={paymentMethod}
+            onApproved={() => {
+              clearCart();
+              router.push("/checkout/sucesso");
+            }}
+            onPending={() => {
+              clearCart();
+              router.push("/checkout/pendente");
+            }}
+          />
+        </div>
+      </div>
+    );
   }
 
   if (isHydrated && items.length === 0) {
@@ -269,7 +300,7 @@ export function CheckoutPageContent() {
               Pagamento
             </h2>
             <div className="mt-4 flex flex-col gap-2.5">
-              {PAYMENT_METHODS.map((method, i) => (
+              {PAYMENT_METHODS.map((method) => (
                 <label
                   key={method.value}
                   className="flex cursor-pointer items-center gap-3 rounded-xl border border-brand-border px-4 py-3 text-sm font-medium text-brand-text has-[:checked]:border-brand-primary has-[:checked]:bg-brand-tint"
@@ -278,7 +309,8 @@ export function CheckoutPageContent() {
                     type="radio"
                     name="payment_method"
                     value={method.value}
-                    defaultChecked={i === 0}
+                    checked={paymentMethod === method.value}
+                    onChange={() => setPaymentMethod(method.value)}
                     className="accent-[var(--color-brand-primary)]"
                   />
                   {method.label}
