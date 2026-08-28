@@ -2,10 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, ShoppingBag, Check } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Check, X } from "lucide-react";
 import { formatPrice, discountPercent } from "@/lib/format";
 import { useCart } from "@/components/CartProvider";
 import type { ProductWithRelations } from "@/lib/queries";
+
+type PendingAction = "cart" | "buy" | null;
 
 export function ProductDetails({ product }: { product: ProductWithRelations }) {
   const { addItem } = useCart();
@@ -24,22 +26,25 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
   const allSelected = groups.every(([label]) => selected[label]);
-  const selectedVariation =
-    groups.length === 1
-      ? product.variations.find(
-          (v) => v.label === groups[0][0] && v.value === selected[groups[0][0]]
-        )
-      : null;
+  const selectedVariation = groups[0]
+    ? product.variations.find(
+        (v) => v.label === groups[0][0] && v.value === selected[groups[0][0]]
+      )
+    : null;
 
-  const stock = groups.length > 0 ? selectedVariation?.stock ?? 0 : product.stock;
+  const stock =
+    groups.length > 0 ? (selectedVariation ? selectedVariation.stock : product.stock) : product.stock;
   const hasPromo = product.promo_price != null && product.promo_price < product.price;
   const price = hasPromo ? product.promo_price! : product.price;
-  const canAdd = product.is_active && (groups.length === 0 || (allSelected && stock > 0));
+  const canAdd =
+    product.is_active &&
+    (groups.length === 0 || (allSelected && !!selectedVariation && selectedVariation.stock > 0));
 
-  function handleAddToCart() {
-    if (!canAdd) return;
+  function doAddToCart() {
     addItem(
       {
         productId: product.id,
@@ -56,9 +61,37 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
     setTimeout(() => setJustAdded(false), 2000);
   }
 
-  function handleBuyNow() {
-    handleAddToCart();
+  function doBuyNow() {
+    doAddToCart();
     router.push("/carrinho");
+  }
+
+  function runPendingAction(action: PendingAction) {
+    if (action === "cart") doAddToCart();
+    if (action === "buy") doBuyNow();
+  }
+
+  function handleClick(action: "cart" | "buy") {
+    if (!product.is_active) return;
+    if (groups.length > 0 && !allSelected) {
+      setPendingAction(action);
+      setPickerOpen(true);
+      return;
+    }
+    if (!canAdd) return;
+    runPendingAction(action);
+  }
+
+  function closePicker() {
+    setPickerOpen(false);
+    setPendingAction(null);
+  }
+
+  function confirmPicker() {
+    if (!allSelected || !selectedVariation || selectedVariation.stock <= 0) return;
+    setPickerOpen(false);
+    if (pendingAction) runPendingAction(pendingAction);
+    setPendingAction(null);
   }
 
   return (
@@ -100,34 +133,6 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
         <p className="mt-6 text-sm leading-relaxed text-brand-text/80">{product.description}</p>
       )}
 
-      {groups.map(([label, options]) => (
-        <div key={label} className="mt-6">
-          <p className="mb-2.5 text-sm font-semibold text-brand-text">{label}</p>
-          <div className="flex flex-wrap gap-2">
-            {options.map((opt) => {
-              const isSelected = selected[label] === opt.value;
-              const outOfStock = opt.stock <= 0;
-              return (
-                <button
-                  key={opt.id}
-                  disabled={outOfStock}
-                  onClick={() => setSelected((s) => ({ ...s, [label]: opt.value }))}
-                  className={`min-w-11 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors ${
-                    outOfStock
-                      ? "cursor-not-allowed border-brand-border text-brand-muted/50 line-through"
-                      : isSelected
-                        ? "border-brand-primary bg-brand-primary text-white"
-                        : "border-brand-border text-brand-text hover:border-brand-primary"
-                  }`}
-                >
-                  {opt.value}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-
       <div className="mt-7 flex items-center gap-4">
         <div className="flex items-center rounded-xl border border-brand-border">
           <button
@@ -146,21 +151,36 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
             <Plus className="h-4 w-4" strokeWidth={2} />
           </button>
         </div>
-        <p className="text-xs text-brand-muted">
-          {!product.is_active
-            ? "Produto indisponível no momento"
-            : groups.length > 0 && !allSelected
-              ? "Selecione uma opção"
-              : stock > 0
-                ? `${stock} em estoque`
-                : "Sem estoque"}
-        </p>
+        <div className="text-xs text-brand-muted">
+          {!product.is_active ? (
+            "Produto indisponível no momento"
+          ) : stock > 0 ? (
+            <>
+              {stock} em estoque
+              {groups.length > 0 && allSelected && (
+                <>
+                  {" "}
+                  · {groups[0][0]}: {selected[groups[0][0]]}{" "}
+                  <button
+                    type="button"
+                    onClick={() => setPickerOpen(true)}
+                    className="font-semibold text-brand-primary hover:text-brand-primary-dark"
+                  >
+                    Trocar
+                  </button>
+                </>
+              )}
+            </>
+          ) : (
+            "Sem estoque"
+          )}
+        </div>
       </div>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <button
-          onClick={handleAddToCart}
-          disabled={!canAdd}
+          onClick={() => handleClick("cart")}
+          disabled={!product.is_active}
           className="flex flex-1 items-center justify-center gap-2 rounded-full border-2 border-brand-black px-6 py-3.5 text-sm font-semibold text-brand-black transition-colors hover:bg-brand-black hover:text-white disabled:cursor-not-allowed disabled:border-brand-border disabled:text-brand-muted disabled:hover:bg-transparent"
         >
           {justAdded ? (
@@ -174,13 +194,83 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
           )}
         </button>
         <button
-          onClick={handleBuyNow}
-          disabled={!canAdd}
+          onClick={() => handleClick("buy")}
+          disabled={!product.is_active}
           className="flex-1 rounded-full bg-brand-primary px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brand-primary-dark disabled:cursor-not-allowed disabled:bg-brand-border"
         >
           Comprar agora
         </button>
       </div>
+
+      {pickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={closePicker} />
+          <div className="relative z-10 w-full max-w-sm rounded-t-2xl border border-brand-border bg-white p-5 shadow-2xl sm:rounded-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-lg font-semibold text-brand-text">
+                Escolha uma opção
+              </h2>
+              <button
+                type="button"
+                onClick={closePicker}
+                aria-label="Fechar"
+                className="rounded-full p-1.5 text-brand-muted hover:bg-brand-tint"
+              >
+                <X className="h-4 w-4" strokeWidth={2} />
+              </button>
+            </div>
+
+            {groups.map(([label, options]) => (
+              <div key={label} className="mb-5">
+                <p className="mb-2.5 text-sm font-semibold text-brand-text">{label}</p>
+                <div className="flex flex-wrap gap-2">
+                  {options.map((opt) => {
+                    const isSelected = selected[label] === opt.value;
+                    const outOfStock = opt.stock <= 0;
+                    return (
+                      <button
+                        key={opt.id}
+                        disabled={outOfStock}
+                        onClick={() => setSelected((s) => ({ ...s, [label]: opt.value }))}
+                        className={`min-w-11 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors ${
+                          outOfStock
+                            ? "cursor-not-allowed border-brand-border text-brand-muted/50 line-through"
+                            : isSelected
+                              ? "border-brand-primary bg-brand-primary text-white"
+                              : "border-brand-border text-brand-text hover:border-brand-primary"
+                        }`}
+                      >
+                        {opt.value}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            <p className="mb-4 text-xs text-brand-muted">
+              {!allSelected
+                ? "Selecione uma opção para continuar."
+                : selectedVariation && selectedVariation.stock > 0
+                  ? `${selectedVariation.stock} em estoque`
+                  : "Sem estoque nessa opção."}
+            </p>
+
+            <button
+              type="button"
+              onClick={confirmPicker}
+              disabled={!allSelected || !selectedVariation || selectedVariation.stock <= 0}
+              className="w-full rounded-full bg-brand-primary px-6 py-3 text-sm font-semibold text-white hover:bg-brand-primary-dark disabled:cursor-not-allowed disabled:bg-brand-border"
+            >
+              {pendingAction === "buy"
+                ? "Comprar agora"
+                : pendingAction === "cart"
+                  ? "Adicionar ao carrinho"
+                  : "Confirmar"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
