@@ -185,44 +185,65 @@ export function ProductForm({
       </section>
 
       <section className="rounded-2xl border border-brand-border bg-white p-5">
-        <h2 className="mb-1 font-display text-lg font-semibold text-brand-text">
-          Variações (opcional)
-        </h2>
+        <div className="mb-1 flex items-center justify-between">
+          <h2 className="font-display text-lg font-semibold text-brand-text">
+            Variações (opcional)
+          </h2>
+          <button
+            type="button"
+            onClick={addVariationOption}
+            className="inline-flex items-center gap-1 text-sm font-semibold text-brand-primary hover:text-brand-primary-dark"
+          >
+            <Plus className="h-4 w-4" strokeWidth={2} />
+            Adicionar {variationLabel.trim() ? variationLabel.trim().toLowerCase() : "opção"}
+          </button>
+        </div>
         <p className="mb-4 text-xs text-brand-muted">
-          Use quando o produto tiver opções que o cliente precisa escolher (cor, tamanho,
-          numeração...). Cada opção tem seu próprio estoque; o "Estoque geral" acima é só o total
-          exibido antes de escolher.
+          Use quando o cliente precisa escolher entre cor, tamanho, numeração etc. O{" "}
+          <b>preço fica só lá em cima</b> — aqui embaixo é só o nome de cada opção e o estoque
+          dela.
         </p>
 
         <div className="mb-4">
           <label className="mb-1.5 block text-sm font-medium text-brand-text">
-            Nome da opção
+            Que tipo de opção é? (ex: Cor, Tamanho, Numeração)
           </label>
           <input
-            placeholder="Ex: Cor, Tamanho, Numeração"
+            placeholder="Ex: Cor"
             value={variationLabel}
             onChange={(e) => setVariationLabel(e.target.value)}
             className="input-mf w-full sm:w-72"
           />
           <p className="mt-1 text-xs text-brand-muted">
-            Um produto só pode ter um tipo de opção (ex: só Cor, ou só Tamanho — não os dois ao
-            mesmo tempo).
+            Um produto só tem um tipo de opção por vez (ex: só Cor, ou só Tamanho — não os dois
+            juntos).
           </p>
         </div>
+
+        {variationOptions.length > 0 && (
+          <div className="mb-1.5 flex gap-2 px-0.5 text-xs font-semibold text-brand-muted">
+            <span className="flex-1 min-w-[140px]">
+              {variationLabel.trim() || "Nome da opção"} (não é o preço)
+            </span>
+            <span className="w-36">Estoque dessa opção</span>
+          </div>
+        )}
 
         <div className="flex flex-col gap-3">
           {variationOptions.map((row, i) => (
             <div key={i} className="flex flex-wrap items-center gap-2">
               <input type="hidden" name="variation_label" value={variationLabel} />
               <input
-                placeholder="Valor (ex: Azul)"
+                placeholder={
+                  variationLabel.trim() ? `Ex: ${variationLabel.trim() === "Cor" ? "Preto" : "40"}` : "Ex: Preto"
+                }
                 value={row.value}
                 onChange={(e) => updateVariationOption(i, "value", e.target.value)}
                 name="variation_value"
                 className="input-mf flex-1 min-w-[140px]"
               />
               <input
-                placeholder="Estoque dessa opção"
+                placeholder="Estoque"
                 type="number"
                 min="0"
                 value={row.stock}
@@ -240,16 +261,13 @@ export function ProductForm({
               </button>
             </div>
           ))}
+          {variationOptions.length === 0 && (
+            <p className="text-xs text-brand-muted">
+              Nenhuma opção adicionada. Clique em &quot;Adicionar&quot; acima se este produto tiver
+              cor, tamanho ou outra escolha.
+            </p>
+          )}
         </div>
-
-        <button
-          type="button"
-          onClick={addVariationOption}
-          className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-primary hover:text-brand-primary-dark"
-        >
-          <Plus className="h-4 w-4" strokeWidth={2} />
-          Adicionar valor
-        </button>
       </section>
 
       <section className="rounded-2xl border border-brand-border bg-white p-5">
