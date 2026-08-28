@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SiteChrome } from "@/components/SiteChrome";
 import { ProductGrid } from "@/components/ProductGrid";
+import { CategoryFilterGrid } from "@/components/CategoryFilterGrid";
 import { getCategoryBySlug, getCategoryPageData } from "@/lib/queries";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -31,20 +32,8 @@ export default async function CategoriaPage({ params }: Params) {
         </p>
 
         {sections ? (
-          <div className="mt-8 flex flex-col gap-12">
-            {sections.map((section) => (
-              <div key={section.category.id} id={section.category.slug} className="scroll-mt-24">
-                <h2 className="font-display text-xl font-semibold text-brand-text md:text-2xl">
-                  {section.category.name}
-                </h2>
-                <p className="mt-1 text-sm text-brand-muted">
-                  {section.products.length} {section.products.length === 1 ? "produto" : "produtos"}
-                </p>
-                <div className="mt-5">
-                  <ProductGrid products={section.products} />
-                </div>
-              </div>
-            ))}
+          <div className="mt-8">
+            <CategoryFilterGrid sections={sections} />
           </div>
         ) : (
           <div className="mt-8">
