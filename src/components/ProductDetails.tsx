@@ -13,36 +13,39 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
   const { addItem } = useCart();
   const router = useRouter();
 
-  const groups = useMemo(() => {
-    const map = new Map<string, typeof product.variations>();
-    for (const v of product.variations) {
-      const list = map.get(v.label) ?? [];
-      list.push(v);
-      map.set(v.label, list);
-    }
-    return Array.from(map.entries());
+  // O produto só suporta uma dimensão de variação por vez (ex: só Cor, ou só
+  // Tamanho). Se o cadastro tiver rótulos diferentes por engano, usamos
+  // apenas o primeiro grupo em vez de exigir uma seleção "impossível" de
+  // vários grupos ao mesmo tempo.
+  const variationGroup = useMemo(() => {
+    if (product.variations.length === 0) return null;
+    const label = product.variations[0].label;
+    return [label, product.variations.filter((v) => v.label === label)] as const;
   }, [product.variations]);
 
-  const [selected, setSelected] = useState<Record<string, string>>({});
+  const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [justAdded, setJustAdded] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
-  const allSelected = groups.every(([label]) => selected[label]);
-  const selectedVariation = groups[0]
-    ? product.variations.find(
-        (v) => v.label === groups[0][0] && v.value === selected[groups[0][0]]
-      )
-    : null;
+  const hasVariations = !!variationGroup;
+  const allSelected = !hasVariations || selectedValue != null;
+  const selectedVariation =
+    variationGroup && selectedValue
+      ? variationGroup[1].find((v) => v.value === selectedValue)
+      : null;
 
-  const stock =
-    groups.length > 0 ? (selectedVariation ? selectedVariation.stock : product.stock) : product.stock;
+  const stock = hasVariations ? (selectedVariation ? selectedVariation.stock : product.stock) : product.stock;
   const hasPromo = product.promo_price != null && product.promo_price < product.price;
   const price = hasPromo ? product.promo_price! : product.price;
   const canAdd =
     product.is_active &&
-    (groups.length === 0 || (allSelected && !!selectedVariation && selectedVariation.stock > 0));
+    (!hasVariations || (!!selectedVariation && selectedVariation.stock > 0));
+
+  function pickValue(value: string) {
+    setSelectedValue((current) => (current === value ? null : value));
+  }
 
   function doAddToCart() {
     addItem(
@@ -52,8 +55,8 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
         name: product.name,
         image: product.images[0]?.url ?? null,
         price,
-        variationLabel: groups[0]?.[0] ?? null,
-        variationValue: groups[0] ? selected[groups[0][0]] : null,
+        variationLabel: variationGroup?.[0] ?? null,
+        variationValue: selectedValue,
       },
       quantity
     );
@@ -73,7 +76,7 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
 
   function handleClick(action: "cart" | "buy") {
     if (!product.is_active) return;
-    if (groups.length > 0 && !allSelected) {
+    if (hasVariations && !allSelected) {
       setPendingAction(action);
       setPickerOpen(true);
       return;
@@ -157,10 +160,10 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
           ) : stock > 0 ? (
             <>
               {stock} em estoque
-              {groups.length > 0 && allSelected && (
+              {hasVariations && selectedVariation && (
                 <>
                   {" "}
-                  · {groups[0][0]}: {selected[groups[0][0]]}{" "}
+                  · {variationGroup![0]}: {selectedValue}{" "}
                   <button
                     type="button"
                     onClick={() => setPickerOpen(true)}
@@ -202,7 +205,7 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
         </button>
       </div>
 
-      {pickerOpen && (
+      {pickerOpen && variationGroup && (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4">
           <div className="absolute inset-0 bg-black/40" onClick={closePicker} />
           <div className="relative z-10 w-full max-w-sm rounded-t-2xl border border-brand-border bg-white p-5 shadow-2xl sm:rounded-2xl">
@@ -220,42 +223,31 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
               </button>
             </div>
 
-            {groups.map(([label, options]) => (
-              <div key={label} className="mb-5">
-                <p className="mb-2.5 text-sm font-semibold text-brand-text">{label}</p>
-                <div className="flex flex-wrap gap-2">
-                  {options.map((opt) => {
-                    const isSelected = selected[label] === opt.value;
-                    const outOfStock = opt.stock <= 0;
-                    return (
-                      <button
-                        key={opt.id}
-                        disabled={outOfStock}
-                        onClick={() =>
-                          setSelected((s) => {
-                            if (s[label] === opt.value) {
-                              const next = { ...s };
-                              delete next[label];
-                              return next;
-                            }
-                            return { ...s, [label]: opt.value };
-                          })
-                        }
-                        className={`min-w-11 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors ${
-                          outOfStock
-                            ? "cursor-not-allowed border-brand-border text-brand-muted/50 line-through"
-                            : isSelected
-                              ? "border-brand-primary bg-brand-primary text-white"
-                              : "border-brand-border text-brand-text hover:border-brand-primary"
-                        }`}
-                      >
-                        {opt.value}
-                      </button>
-                    );
-                  })}
-                </div>
+            <div className="mb-5">
+              <p className="mb-2.5 text-sm font-semibold text-brand-text">{variationGroup[0]}</p>
+              <div className="flex flex-wrap gap-2">
+                {variationGroup[1].map((opt) => {
+                  const isSelected = selectedValue === opt.value;
+                  const outOfStock = opt.stock <= 0;
+                  return (
+                    <button
+                      key={opt.id}
+                      disabled={outOfStock}
+                      onClick={() => pickValue(opt.value)}
+                      className={`min-w-11 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors ${
+                        outOfStock
+                          ? "cursor-not-allowed border-brand-border text-brand-muted/50 line-through"
+                          : isSelected
+                            ? "border-brand-primary bg-brand-primary text-white"
+                            : "border-brand-border text-brand-text hover:border-brand-primary"
+                      }`}
+                    >
+                      {opt.value}
+                    </button>
+                  );
+                })}
               </div>
-            ))}
+            </div>
 
             <p className="mb-4 text-xs text-brand-muted">
               {!allSelected
