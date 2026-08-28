@@ -88,6 +88,7 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
   function closePicker() {
     setPickerOpen(false);
     setPendingAction(null);
+    setSelectedValue(null);
   }
 
   function confirmPicker() {
