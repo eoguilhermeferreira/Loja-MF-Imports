@@ -7,7 +7,7 @@ import { saveProductAction } from "@/app/admin/actions";
 import { ImageDropzone } from "@/components/admin/ImageDropzone";
 import type { CategoryWithChildren, ProductWithRelations } from "@/lib/queries";
 
-type VariationRow = { label: string; value: string; stock: number };
+type VariationOption = { value: string; stock: number };
 
 const HOME_SECTIONS = [
   { value: "", label: "Nenhum (não aparece na tela inicial)" },
@@ -26,8 +26,9 @@ export function ProductForm({
   const [existingImages, setExistingImages] = useState(product?.images ?? []);
   const [removedIds, setRemovedIds] = useState<string[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
-  const [variations, setVariations] = useState<VariationRow[]>(
-    product?.variations.map((v) => ({ label: v.label, value: v.value, stock: v.stock })) ?? []
+  const [variationLabel, setVariationLabel] = useState(product?.variations[0]?.label ?? "");
+  const [variationOptions, setVariationOptions] = useState<VariationOption[]>(
+    product?.variations.map((v) => ({ value: v.value, stock: v.stock })) ?? []
   );
 
   function removeExistingImage(id: string) {
@@ -39,20 +40,20 @@ export function ProductForm({
     setNewImagePreviews(files.map((f) => URL.createObjectURL(f)));
   }
 
-  function addVariation() {
-    setVariations((v) => [...v, { label: "", value: "", stock: 0 }]);
+  function addVariationOption() {
+    setVariationOptions((v) => [...v, { value: "", stock: 0 }]);
   }
 
-  function updateVariation(index: number, field: keyof VariationRow, value: string) {
-    setVariations((v) =>
+  function updateVariationOption(index: number, field: keyof VariationOption, value: string) {
+    setVariationOptions((v) =>
       v.map((row, i) =>
         i === index ? { ...row, [field]: field === "stock" ? Number(value) : value } : row
       )
     );
   }
 
-  function removeVariation(index: number) {
-    setVariations((v) => v.filter((_, i) => i !== index));
+  function removeVariationOption(index: number) {
+    setVariationOptions((v) => v.filter((_, i) => i !== index));
   }
 
   return (
@@ -184,60 +185,71 @@ export function ProductForm({
       </section>
 
       <section className="rounded-2xl border border-brand-border bg-white p-5">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-display text-lg font-semibold text-brand-text">
-            Variações (opcional)
-          </h2>
-          <button
-            type="button"
-            onClick={addVariation}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-brand-primary hover:text-brand-primary-dark"
-          >
-            <Plus className="h-4 w-4" strokeWidth={2} />
-            Adicionar
-          </button>
-        </div>
+        <h2 className="mb-1 font-display text-lg font-semibold text-brand-text">
+          Variações (opcional)
+        </h2>
         <p className="mb-4 text-xs text-brand-muted">
-          Ex: Numeração/40, Volume/100ml, Armazenamento/128GB, Cor/Preto. Deixe vazio se o
-          produto não tiver variações.
+          Use quando o produto tiver opções que o cliente precisa escolher (cor, tamanho,
+          numeração...). Cada opção tem seu próprio estoque; o "Estoque geral" acima é só o total
+          exibido antes de escolher.
         </p>
+
+        <div className="mb-4">
+          <label className="mb-1.5 block text-sm font-medium text-brand-text">
+            Nome da opção
+          </label>
+          <input
+            placeholder="Ex: Cor, Tamanho, Numeração"
+            value={variationLabel}
+            onChange={(e) => setVariationLabel(e.target.value)}
+            className="input-mf w-full sm:w-72"
+          />
+          <p className="mt-1 text-xs text-brand-muted">
+            Um produto só pode ter um tipo de opção (ex: só Cor, ou só Tamanho — não os dois ao
+            mesmo tempo).
+          </p>
+        </div>
+
         <div className="flex flex-col gap-3">
-          {variations.map((row, i) => (
+          {variationOptions.map((row, i) => (
             <div key={i} className="flex flex-wrap items-center gap-2">
+              <input type="hidden" name="variation_label" value={variationLabel} />
               <input
-                placeholder="Rótulo (ex: Numeração)"
-                value={row.label}
-                onChange={(e) => updateVariation(i, "label", e.target.value)}
-                name="variation_label"
+                placeholder="Valor (ex: Azul)"
+                value={row.value}
+                onChange={(e) => updateVariationOption(i, "value", e.target.value)}
+                name="variation_value"
                 className="input-mf flex-1 min-w-[140px]"
               />
               <input
-                placeholder="Valor (ex: 40)"
-                value={row.value}
-                onChange={(e) => updateVariation(i, "value", e.target.value)}
-                name="variation_value"
-                className="input-mf flex-1 min-w-[100px]"
-              />
-              <input
-                placeholder="Estoque"
+                placeholder="Estoque dessa opção"
                 type="number"
                 min="0"
                 value={row.stock}
-                onChange={(e) => updateVariation(i, "stock", e.target.value)}
+                onChange={(e) => updateVariationOption(i, "stock", e.target.value)}
                 name="variation_stock"
-                className="input-mf w-24"
+                className="input-mf w-36"
               />
               <button
                 type="button"
-                onClick={() => removeVariation(i)}
+                onClick={() => removeVariationOption(i)}
                 className="text-brand-muted hover:text-red-500"
-                aria-label="Remover variação"
+                aria-label="Remover opção"
               >
                 <X className="h-4 w-4" strokeWidth={2} />
               </button>
             </div>
           ))}
         </div>
+
+        <button
+          type="button"
+          onClick={addVariationOption}
+          className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-primary hover:text-brand-primary-dark"
+        >
+          <Plus className="h-4 w-4" strokeWidth={2} />
+          Adicionar valor
+        </button>
       </section>
 
       <section className="rounded-2xl border border-brand-border bg-white p-5">

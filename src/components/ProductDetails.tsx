@@ -231,7 +231,16 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
                       <button
                         key={opt.id}
                         disabled={outOfStock}
-                        onClick={() => setSelected((s) => ({ ...s, [label]: opt.value }))}
+                        onClick={() =>
+                          setSelected((s) => {
+                            if (s[label] === opt.value) {
+                              const next = { ...s };
+                              delete next[label];
+                              return next;
+                            }
+                            return { ...s, [label]: opt.value };
+                          })
+                        }
                         className={`min-w-11 rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors ${
                           outOfStock
                             ? "cursor-not-allowed border-brand-border text-brand-muted/50 line-through"
