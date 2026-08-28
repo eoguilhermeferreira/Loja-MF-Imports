@@ -76,7 +76,7 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
 
   function handleClick(action: "cart" | "buy") {
     if (!product.is_active) return;
-    if (hasVariations && !allSelected) {
+    if (hasVariations && (!allSelected || !canAdd)) {
       setPendingAction(action);
       setPickerOpen(true);
       return;
