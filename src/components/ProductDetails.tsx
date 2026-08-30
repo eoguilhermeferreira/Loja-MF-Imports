@@ -130,7 +130,7 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
         )}
       </div>
       <p className="mt-1 text-xs text-brand-muted">
-        ou 12x de {formatPrice(price / 12)} sem juros
+        ou 12x de {formatPrice(price / 12)}
       </p>
 
       {product.description && (
