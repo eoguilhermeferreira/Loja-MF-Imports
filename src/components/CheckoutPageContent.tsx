@@ -345,7 +345,7 @@ export function CheckoutPageContent() {
             <span>Frete</span>
             <span>{selectedShipping ? formatPrice(shippingCost) : "A calcular"}</span>
           </div>
-          <div className="mt-3 flex justify-between border-t border-brand-border pt-3 font-display text-base font-semibold text-brand-text">
+          <div className="mt-3 flex justify-between border-t border-brand-border pt-3 text-base font-semibold text-brand-text">
             <span>Total</span>
             <span>{formatPrice(subtotal + shippingCost)}</span>
           </div>

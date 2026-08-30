@@ -88,7 +88,7 @@ export function CartPageContent() {
                     </button>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-display text-base font-semibold text-brand-text">
+                    <span className="text-base font-semibold text-brand-text">
                       {formatPrice(item.price * item.quantity)}
                     </span>
                     <button

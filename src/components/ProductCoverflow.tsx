@@ -208,7 +208,7 @@ export function ProductCoverflow({ products }: { products: ProductWithRelations[
                 <div className="mt-1.5 flex items-baseline gap-2">
                   {hasPromo ? (
                     <>
-                      <span className="font-display text-base font-semibold text-brand-primary-dark">
+                      <span className="text-base font-semibold text-brand-primary-dark">
                         {formatPrice(product.promo_price!)}
                       </span>
                       <span className="text-xs text-brand-muted line-through">
@@ -216,7 +216,7 @@ export function ProductCoverflow({ products }: { products: ProductWithRelations[
                       </span>
                     </>
                   ) : (
-                    <span className="font-display text-base font-semibold text-brand-text">
+                    <span className="text-base font-semibold text-brand-text">
                       {formatPrice(product.price)}
                     </span>
                   )}

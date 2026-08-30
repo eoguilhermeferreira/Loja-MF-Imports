@@ -105,7 +105,7 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
           {product.brand}
         </span>
       )}
-      <h1 className="mt-1 font-display text-2xl font-semibold text-brand-text sm:text-3xl">
+      <h1 className="mt-1 text-2xl font-semibold text-brand-text sm:text-3xl">
         {product.name}
       </h1>
       <p className="mt-1 text-xs text-brand-muted">Cód. {product.code}</p>
@@ -113,7 +113,7 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
       <div className="mt-4 flex items-baseline gap-3">
         {hasPromo ? (
           <>
-            <span className="font-display text-3xl font-semibold text-brand-primary-dark">
+            <span className="text-3xl font-semibold text-brand-primary-dark">
               {formatPrice(product.promo_price!)}
             </span>
             <span className="text-base text-brand-muted line-through">
@@ -124,7 +124,7 @@ export function ProductDetails({ product }: { product: ProductWithRelations }) {
             </span>
           </>
         ) : (
-          <span className="font-display text-3xl font-semibold text-brand-text">
+          <span className="text-3xl font-semibold text-brand-text">
             {formatPrice(product.price)}
           </span>
         )}

@@ -69,7 +69,7 @@ export function ProductCard({ product }: { product: ProductWithRelations }) {
         <div className="mt-1 flex items-baseline gap-2">
           {hasPromo ? (
             <>
-              <span className="font-display text-lg font-semibold text-brand-primary-dark">
+              <span className="text-lg font-semibold text-brand-primary-dark">
                 {formatPrice(product.promo_price!)}
               </span>
               <span className="text-sm text-brand-muted line-through">
@@ -77,7 +77,7 @@ export function ProductCard({ product }: { product: ProductWithRelations }) {
               </span>
             </>
           ) : (
-            <span className="font-display text-lg font-semibold text-brand-text">
+            <span className="text-lg font-semibold text-brand-text">
               {formatPrice(product.price)}
             </span>
           )}
