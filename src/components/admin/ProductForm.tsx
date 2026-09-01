@@ -80,7 +80,7 @@ export function ProductForm({
             className="input-mf w-full"
           />
         </div>
-        <div>
+        <div className="sm:col-span-2">
           <label className="mb-1.5 block text-sm font-medium text-brand-text">Categoria</label>
           <select
             name="category_id"
@@ -104,10 +104,6 @@ export function ProductForm({
               )
             )}
           </select>
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-brand-text">Marca</label>
-          <input name="brand" defaultValue={product?.brand ?? ""} className="input-mf w-full" />
         </div>
       </section>
 
