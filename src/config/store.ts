@@ -14,7 +14,7 @@ export const STORE_INFO = {
 } as const;
 
 export const AGENCY_CREDIT = {
-  name: "agência Nodex",
+  name: "Agência Nodex",
   instagramUrl: "https://instagram.com/agencynodex",
 } as const;
 
