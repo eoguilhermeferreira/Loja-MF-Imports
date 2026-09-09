@@ -21,7 +21,7 @@ export function SearchBar({ className = "" }: { className?: string }) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Buscar perfumes, tênis, celulares..."
-        className="w-full rounded-full border border-brand-border bg-brand-tint py-2.5 pl-11 pr-4 text-sm text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-colors"
+        className="w-full rounded-full border border-brand-border bg-brand-tint py-2.5 pl-11 pr-4 text-base text-brand-text placeholder:text-brand-muted focus:border-brand-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-colors sm:text-sm"
       />
       <button
         type="submit"

@@ -119,6 +119,7 @@ export function CheckoutPageContent() {
       try {
         const result = await createOrderAction(formData);
         setOrderInfo(result);
+        window.scrollTo({ top: 0, behavior: "smooth" });
       } catch {
         setError("Não foi possível confirmar seu pedido. Tente novamente.");
       }
