@@ -85,19 +85,17 @@ export async function createOrderAction(formData: FormData) {
   };
 
   const { data: order, error } = await supabase
-    .from("orders")
-    .insert({
-      customer_name: name,
-      customer_email: email,
-      customer_phone: phone,
-      shipping_address: shippingAddress,
-      subtotal,
-      shipping_cost: shippingCost,
-      shipping_method: shippingMethod,
-      total,
-      payment_method: paymentMethod,
+    .rpc("create_order_public", {
+      p_customer_name: name,
+      p_customer_email: email,
+      p_customer_phone: phone,
+      p_shipping_address: shippingAddress,
+      p_subtotal: subtotal,
+      p_shipping_cost: shippingCost,
+      p_shipping_method: shippingMethod,
+      p_total: total,
+      p_payment_method: paymentMethod,
     })
-    .select("id, order_number")
     .single();
 
   if (error) throw new Error(error.message);

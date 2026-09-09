@@ -417,6 +417,20 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      create_order_public: {
+        Args: {
+          p_customer_name: string
+          p_customer_email: string
+          p_customer_phone: string
+          p_shipping_address: Json
+          p_subtotal: number
+          p_shipping_cost: number
+          p_shipping_method: string
+          p_total: number
+          p_payment_method: Database["public"]["Enums"]["payment_method_enum"]
+        }
+        Returns: { id: string; order_number: number }[]
+      }
     }
     Enums: {
       delivery_status_enum:
