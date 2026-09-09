@@ -47,7 +47,15 @@ export function HeaderMobileMenu({ categories }: { categories: CategoryWithChild
             </div>
 
             <nav className="flex-1 overflow-y-auto px-5 py-2">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-brand-muted">
+              <Link
+                href="/"
+                onClick={() => setOpen(false)}
+                className="block border-b border-brand-border/70 py-3 text-[15px] font-semibold text-brand-text hover:text-brand-primary"
+              >
+                Início
+              </Link>
+
+              <p className="mb-2 mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-brand-muted">
                 Categorias
               </p>
               <ul className="flex flex-col">
@@ -83,7 +91,7 @@ export function HeaderMobileMenu({ categories }: { categories: CategoryWithChild
                           {cat.children.map((child) => (
                             <li key={child.id}>
                               <Link
-                                href={`/categoria/${cat.slug}#${child.slug}`}
+                                href={`/categoria/${cat.slug}`}
                                 onClick={() => setOpen(false)}
                                 className="block py-2 text-sm text-brand-muted hover:text-brand-primary"
                               >
