@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 import { BackButton } from "@/components/BackButton";
+import { DeleteOrderButton } from "@/components/admin/DeleteOrderButton";
 
 export default async function AdminPedidoDetailPage({
   params,
@@ -24,9 +25,12 @@ export default async function AdminPedidoDetailPage({
   return (
     <div className="flex flex-col gap-6">
       <BackButton label="Voltar" />
-      <h1 className="font-display text-2xl font-semibold text-brand-text">
-        Pedido #{order.order_number}
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-2xl font-semibold text-brand-text">
+          Pedido #{order.order_number}
+        </h1>
+        <DeleteOrderButton id={order.id} />
+      </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">

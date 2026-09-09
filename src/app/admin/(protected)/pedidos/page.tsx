@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
+import { DeleteOrderButton } from "@/components/admin/DeleteOrderButton";
 
 const PAYMENT_LABELS: Record<string, string> = {
   pendente: "Pendente",
@@ -38,6 +39,7 @@ export default async function AdminPedidosPage() {
               <th className="px-4 py-3">Pagamento</th>
               <th className="px-4 py-3">Entrega</th>
               <th className="px-4 py-3">Data</th>
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody>
@@ -71,6 +73,9 @@ export default async function AdminPedidosPage() {
                 </td>
                 <td className="px-4 py-3 text-brand-muted">
                   {new Date(order.created_at).toLocaleDateString("pt-BR")}
+                </td>
+                <td className="px-4 py-3">
+                  <DeleteOrderButton id={order.id} />
                 </td>
               </tr>
             ))}
