@@ -6,6 +6,16 @@ import { STORE_INFO, AGENCY_CREDIT } from "@/config/store";
 import { Logo } from "@/components/Logo";
 import { getCategories } from "@/lib/queries";
 
+const PAYMENT_ICONS = [
+  { file: "pix.svg", alt: "Pix" },
+  { file: "visa.svg", alt: "Visa" },
+  { file: "mastercard.svg", alt: "Mastercard" },
+  { file: "elo.svg", alt: "Elo" },
+  { file: "hipercard.svg", alt: "Hipercard" },
+  { file: "amex.svg", alt: "American Express" },
+  { file: "boleto.svg", alt: "Boleto" },
+] as const;
+
 export async function Footer() {
   const categories = await getCategories();
 
@@ -140,6 +150,25 @@ export async function Footer() {
               </a>
             </li>
           </ul>
+        </div>
+      </div>
+
+      <div className="border-t border-white/10">
+        <div className="container-mf flex flex-col items-center gap-4 py-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40">
+            Formas de pagamento
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2.5">
+            {PAYMENT_ICONS.map((icon) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={icon.file}
+                src={`/payment-icons/${icon.file}`}
+                alt={icon.alt}
+                className="h-8 w-auto"
+              />
+            ))}
+          </div>
         </div>
       </div>
 
