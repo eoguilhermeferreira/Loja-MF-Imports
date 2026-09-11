@@ -172,7 +172,7 @@ export async function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-white/10">
+      <div>
         <div className="container-mf py-6 text-center text-xs text-white/40 leading-relaxed">
           <p>© {new Date().getFullYear()}, {STORE_INFO.name}</p>
           <p>
