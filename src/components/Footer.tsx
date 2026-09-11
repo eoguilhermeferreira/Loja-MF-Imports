@@ -26,22 +26,22 @@ export async function Footer() {
           <div className="flex items-center gap-3">
             <Truck className="h-6 w-6 shrink-0 text-brand-primary-light" strokeWidth={1.5} />
             <div>
-              <p className="text-sm font-semibold text-white">Envio para todo o Brasil</p>
-              <p className="text-xs text-white/60">Com rastreio do pedido</p>
+              <p className="text-sm font-semibold text-brand-primary-light">Envio para todo o Brasil</p>
+              <p className="text-xs text-brand-primary-light/60">Com rastreio do pedido</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <CreditCard className="h-6 w-6 shrink-0 text-brand-primary-light" strokeWidth={1.5} />
             <div>
-              <p className="text-sm font-semibold text-white">Parcele em até 12x</p>
-              <p className="text-xs text-white/60">Pix, cartão ou boleto</p>
+              <p className="text-sm font-semibold text-brand-primary-light">Parcele em até 12x</p>
+              <p className="text-xs text-brand-primary-light/60">Pix, cartão ou boleto</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             <WhatsappIcon className="h-6 w-6 shrink-0 text-brand-primary-light" />
             <div>
-              <p className="text-sm font-semibold text-white">Suporte via WhatsApp</p>
-              <p className="text-xs text-white/60">Atendimento direto e rápido</p>
+              <p className="text-sm font-semibold text-brand-primary-light">Suporte via WhatsApp</p>
+              <p className="text-xs text-brand-primary-light/60">Atendimento direto e rápido</p>
             </div>
           </div>
         </div>
