@@ -173,23 +173,34 @@ export async function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="container-mf flex flex-col items-center justify-between gap-4 py-6 text-xs text-white/40 sm:flex-row sm:items-end">
-          <div className="text-center leading-relaxed sm:text-left">
-            <p>© {new Date().getFullYear()}, {STORE_INFO.name}</p>
-            <p>
-              É vedada qualquer reprodução total ou parcial, nos termos da Lei nº 9.610/98.
-              Todos os direitos reservados.
-            </p>
-            <p>{STORE_INFO.address}</p>
-            <p>{STORE_INFO.ownerName}</p>
-          </div>
+        <div className="container-mf py-6 text-center text-xs text-white/40 leading-relaxed">
+          <p>© {new Date().getFullYear()}, {STORE_INFO.name}</p>
+          <p>
+            É vedada qualquer reprodução total ou parcial, nos termos da Lei nº 9.610/98.
+            Todos os direitos reservados.
+          </p>
+          <p>{STORE_INFO.address}</p>
+          <p>{STORE_INFO.ownerName}</p>
+        </div>
+      </div>
+
+      <div className="border-t border-white/10">
+        <div className="container-mf flex flex-col items-center gap-2 py-6">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-white/30">
+            Desenvolvido por
+          </p>
           <a
             href={AGENCY_CREDIT.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 hover:text-brand-primary-light"
+            aria-label={AGENCY_CREDIT.name}
           >
-            Feito pela {AGENCY_CREDIT.name}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/nodex-logo-white.png"
+              alt={AGENCY_CREDIT.name}
+              className="h-16 w-auto opacity-70 transition-opacity hover:opacity-100"
+            />
           </a>
         </div>
       </div>
