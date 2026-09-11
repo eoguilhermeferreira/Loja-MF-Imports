@@ -197,7 +197,7 @@ export async function Footer() {
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/nodex-logo-white.png"
+              src="/nodex-logo-footer.png"
               alt={AGENCY_CREDIT.name}
               className="h-16 w-auto opacity-70 transition-opacity hover:opacity-100"
             />
